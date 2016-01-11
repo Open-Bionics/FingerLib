@@ -1,0 +1,47 @@
+######################################
+# Syntax Coloring Map Finger
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Finger	KEYWORD1	Finger
+FingerLib	KEYWORD1	FingerLib
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+attach	KEYWORD2
+detach	KEYWORD2
+attached	KEYWORD2
+writePos	KEYWORD2
+writeDir	KEYWORD2
+writeSpeed	KEYWORD2
+readPos	KEYWORD2
+readPosError	KEYWORD2
+readDir	KEYWORD2
+readSpeed	KEYWORD2
+
+setPosLimits	KEYWORD2
+setSpeedLimits	KEYWORD2
+fingerPosCtrl	KEYWORD2
+stopMotor	KEYWORD2
+disableMotor	KEYWORD2
+enableMotor	KEYWORD2
+reachedPos	KEYWORD2
+open	KEYWORD2
+close	KEYWORD2
+open_close	KEYWORD2
+
+printSpeed	KEYWORD2
+printPos	KEYWORD2
+printPosError	KEYWORD2
+printDir	KEYWORD2
+printReached	KEYWORD2
+printDetails	KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
