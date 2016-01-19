@@ -38,7 +38,7 @@
 #elif defined(CHILD_BOARD)
 #define NUM_FINGERS 3
 #elif defined(ALMOND_BOARD)
-#define NUM_FINGERS 6             // 6 motors instead of 5 as it is not hand (left/right) specific
+#define NUM_FINGERS 5             // 6 motors instead of 5 as it is not hand (left/right) specific
 #endif
 
 // uncomment one of the following to select which hand is used
@@ -67,7 +67,7 @@ void loop()
   int i;
   if(MYSERIAL.available())
   {
-    fingerNum = (int) MYSERIAL.read() - 48;
+    fingerNum = (int) MYSERIAL.read() - 48;     // convert ASCII to number
     if(IS_BETWEEN(fingerNum,0,(NUM_FINGERS-1)))
     {
       finger[fingerNum].open_close();     // toggle direction
@@ -108,3 +108,5 @@ void stopMotors(void)
     //finger[i].writePos(finger[i].readPos());
   }
 }
+
+//void fullyExtendMotors

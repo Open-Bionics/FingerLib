@@ -27,7 +27,7 @@
 #endif
 #include "timers/samd_FingerTimer.h"
 #else
-#error "This library only supports boards an Arduino Mega 2560 or an Arduino Zero."
+#error "This library only supports boards using an Arduino Mega 2560 or an Arduino Zero."
 #endif
 
 #define OPEN	0
@@ -38,8 +38,10 @@
 #define MAX_FINGERS			6			// maximum number of _fingers
 #define MAX_FINGER_SPEED	255			// maximum motor speed
 #define MIN_FINGER_SPEED	99			// minimum motor speed
-#define MAX_FINGER_POS		923			// maximum motor position
-#define MIN_FINGER_POS		150			// minimum motor position
+#define MAX_FINGER_POS		973			// maximum motor position
+#define MIN_FINGER_POS		50			// minimum motor position
+// #define MAX_FINGER_POS		923			// maximum motor position
+// #define MIN_FINGER_POS		100			// minimum motor position
 #define POS_REACHED_TOLERANCE	50		// tolerance for posReached()
 
 typedef struct  {

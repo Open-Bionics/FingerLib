@@ -1,5 +1,3 @@
-
-
 void pinAssignment(void)
 {
   if(handFlag == RIGHT)
@@ -20,7 +18,7 @@ void pinAssignment(void)
       finger[1].attach(8,9,A4);
       finger[2].attach(4,3,A0);
     #elif defined(ALMOND_BOARD)
-      finger[0].attach(5,2,A0);
+      finger[0].attach(13,4,A5);          // Right motor connector
       finger[1].attach(3,6,A1);
       finger[2].attach(7,8,A2);
       finger[3].attach(10,9,A3);
@@ -47,7 +45,7 @@ void pinAssignment(void)
       finger[1].attach(4,3,A0);
       finger[2].attach(8,9,A4);
     #elif defined(ALMOND_BOARD)
-      finger[0].attach(5,2,A0);
+      finger[0].attach(5,2,A0);          // Left motor connector
       finger[1].attach(11,12,A4);
       finger[2].attach(10,9,A3);
       finger[3].attach(7,8,A2);
@@ -57,4 +55,3 @@ void pinAssignment(void)
     #endif
   }
 }
-

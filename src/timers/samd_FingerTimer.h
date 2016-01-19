@@ -44,7 +44,7 @@
 #define ms(val)		((val)*(TIMER_FREQ))		// number of timer ticks per ms
 
 // calculate number of timer ticks per ms for each timer function
-#define MILLI_TIME        ms(1)					// 1ms		1Hz	
+#define MILLI_TIME        ms(1)					// 1ms		1kHz	
 #define MOTOR_CTRL_TIME   ms(5)					// 5ms		200Hz
 
 // function prototypes

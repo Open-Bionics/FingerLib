@@ -375,6 +375,8 @@ void motorControl(int fNum, signed int motorSpeed)
 	// split vectorised speed into speed and direction elements, and limit the results
 	if(motorSpeed < -((signed int)_fingers[fNum].MinSpeed))    
 	{
+		
+		
 		(motorSpeed < -_fingers[fNum].MaxSpeed) ? motorSpeed = _fingers[fNum].MaxSpeed : motorSpeed = -motorSpeed;
 		direction = OPEN;
 	}
