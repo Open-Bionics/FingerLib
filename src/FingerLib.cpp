@@ -139,7 +139,7 @@ uint8_t Finger::readSpeed(void)
 	return _fingers[fingerIndex].CurrSpeed;
 }
 
-uint8_t Finger::readTargSpeed(void)
+uint8_t Finger::readTargetSpeed(void)
 {
 	return _fingers[fingerIndex].TargSpeed;
 }

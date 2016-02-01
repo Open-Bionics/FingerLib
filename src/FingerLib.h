@@ -74,7 +74,10 @@ class Finger
 		uint8_t attach(int dir0, int dir1, int sense);				// attach direction & sense pins of a finger 
 		uint8_t attach(int dir0, int dir1, int sense, bool inv);
 		void detach(void);
-		bool attached(void);                   
+		bool attached(void);  
+		void setPosLimits(int min, int max);
+		void setSpeedLimits(int min, int max);
+		void invertFingerDir(void);                 
 		void writePos(int value);   
 		void writeDir(int value);   
 		void writeSpeed(int value);   
@@ -83,10 +86,8 @@ class Finger
 		uint16_t readTargetPos(void);
 		uint8_t readDir(void);
 		uint8_t readSpeed(void);
-		uint8_t readTargSpeed(void);
-		void setPosLimits(int min, int max);
-		void setSpeedLimits(int min, int max); 
-		void invertFingerDir(void);
+		uint8_t readTargetSpeed(void);
+		
 		
 		void stopMotor(void);				// stop single motor
 		void disableMotor(void);			// set motor speed to 0
