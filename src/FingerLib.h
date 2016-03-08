@@ -15,13 +15,13 @@
 #include <inttypes.h>
 #include <Arduino.h>
 
-// Architecture specific include
+// Board specific include
 #if defined(ARDUINO_AVR_MEGA2560)
 #ifndef MYSERIAL
 #define MYSERIAL Serial
 #endif
 #include "timers/avr_FingerTimer.h"
-#elif defined(ARDUINO_ARCH_SAMD)
+#elif defined(ARDUINO_SAMD_ZERO)
 #ifndef MYSERIAL
 #define MYSERIAL SerialUSB
 #endif
