@@ -34,7 +34,7 @@ Finger::Finger()
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
-uint8_t Finger::attach(int dir0, int dir1, int sense, bool inv)
+uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t sense, bool inv)
 {
 	if (fingerIndex < MAX_FINGERS) 
 	{
@@ -49,6 +49,7 @@ uint8_t Finger::attach(int dir0, int dir1, int sense, bool inv)
 		// enable the motor and disable finger inversion 
 		_fingers[fingerIndex].invert = inv;
 		_fingers[fingerIndex].motorEn = true;
+		//_fingers[fingerIndex].motorEn = false;
 		// set limits and initial values
 		setPosLimits(MIN_FINGER_POS,MAX_FINGER_POS);
 		setSpeedLimits(MIN_FINGER_SPEED,MAX_FINGER_SPEED);
@@ -65,12 +66,10 @@ uint8_t Finger::attach(int dir0, int dir1, int sense, bool inv)
 		_fingers[fingerIndex].Pin.isActive = true;		// this must be set after the check
 	}
 	
-	
-	
 	return fingerIndex;
 }
 
-uint8_t Finger::attach(int dir0, int dir1, int sense)
+uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t sense)
 {
 	return attach(dir0,dir1,sense,0);
 }
@@ -228,7 +227,7 @@ void Finger::printSpeed(void)
 	printSpeed(0);
 }
 
-void Finger::printSpeed(int newL)
+void Finger::printSpeed(bool newL)
 {
 	MYSERIAL.print("Speed ");
 	MYSERIAL.print(readSpeed());
@@ -242,7 +241,7 @@ void Finger::printPos(void)
 	printPos(0);
 }
 
-void Finger::printPos(int newL)
+void Finger::printPos(bool newL)
 {
 	MYSERIAL.print("Pos ");
 	MYSERIAL.print(readPos());
@@ -256,7 +255,7 @@ void Finger::printPosError(void)
 	printPosError(0);
 }
 
-void Finger::printPosError(int newL)
+void Finger::printPosError(bool newL)
 {
 	MYSERIAL.print("Err ");
 	MYSERIAL.print(readPosError());
@@ -270,7 +269,7 @@ void Finger::printDir(void)
 	printDir(0);
 }
 
-void Finger::printDir(int newL)
+void Finger::printDir(bool newL)
 {
 	MYSERIAL.print("Dir ");
 	MYSERIAL.print(_dirString[readDir()]);
@@ -284,7 +283,7 @@ void Finger::printReached(void)
 	printReached(0);
 }
 
-void Finger::printReached(int newL)
+void Finger::printReached(bool newL)
 {
 	MYSERIAL.print("Reached ");
 	MYSERIAL.print(reachedPos());
@@ -301,9 +300,39 @@ void Finger::printDetails(void)
 	printSpeed();
 	printPos();
 	printDir();
-	printReached(1);
+	printReached(true);		// print new line after
 
 }
+
+
+void Finger::printConfig(void)
+{
+	MYSERIAL.print("Finger");
+	MYSERIAL.print(fingerIndex);
+	MYSERIAL.print(" -");
+	MYSERIAL.print(" \tdir0: ");
+	MYSERIAL.print(_fingers[fingerIndex].Pin.dir[0]);
+	MYSERIAL.print(" \tdir1: ");
+	MYSERIAL.print(_fingers[fingerIndex].Pin.dir[1]);
+	MYSERIAL.print(" \tsense: ");
+	MYSERIAL.print(_fingers[fingerIndex].Pin.sns);
+	MYSERIAL.print("\tinvert: ");
+	MYSERIAL.println(_fingers[fingerIndex].invert);
+	
+	MYSERIAL.print("MinSpeed: ");
+	MYSERIAL.print(_fingers[fingerIndex].MinSpeed);
+	MYSERIAL.print("\tMaxSpeed: ");
+	MYSERIAL.println(_fingers[fingerIndex].MaxSpeed);
+	
+	MYSERIAL.print("MinPos: ");
+	MYSERIAL.print(_fingers[fingerIndex].MinPos);
+	MYSERIAL.print("\tMaxPos: ");
+	MYSERIAL.println(_fingers[fingerIndex].MaxPos);
+	
+	MYSERIAL.print("\n");		
+}
+
+
 
 // controls motor PWM values based on current and target position using a proportional controller (triggered by interrupt)
 // total duration = 439us, therefore max freq = 2kHz. We use 200Hz (5ms), where 0.5ms = motor control, 4.5ms = program runtime
@@ -326,6 +355,7 @@ void fingerPosCtrl(void)
 			fingerCounter++;
 		else 
 			fingerCounter = 0;  
+
 		
 		// read position
 		_fingers[fingerCounter].CurrPos = analogRead(_fingers[fingerCounter].Pin.sns);			// 424us
@@ -375,8 +405,6 @@ void motorControl(int fNum, signed int motorSpeed)
 	// split vectorised speed into speed and direction elements, and limit the results
 	if(motorSpeed < -((signed int)_fingers[fNum].MinSpeed))    
 	{
-		
-		
 		(motorSpeed < -_fingers[fNum].MaxSpeed) ? motorSpeed = _fingers[fNum].MaxSpeed : motorSpeed = -motorSpeed;
 		direction = OPEN;
 	}

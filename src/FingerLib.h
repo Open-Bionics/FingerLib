@@ -71,8 +71,8 @@ class Finger
 	public:
 		Finger();
 		//Finger(int board, int left_right);
-		uint8_t attach(int dir0, int dir1, int sense);				// attach direction & sense pins of a finger 
-		uint8_t attach(int dir0, int dir1, int sense, bool inv);
+		uint8_t attach(uint8_t dir0, uint8_t dir1, uint8_t sense);				// attach direction & sense pins of a finger 
+		uint8_t attach(uint8_t dir0, uint8_t dir1, uint8_t sense, bool inv);
 		void detach(void);
 		bool attached(void);  
 		void setPosLimits(int min, int max);
@@ -100,16 +100,18 @@ class Finger
 		void open_close(boolean dir);		// set finger to fully open/closed 
 		
 		void printSpeed(void);
-		void printSpeed(int newL);
+		void printSpeed(bool newL);
 		void printPos(void);
-		void printPos(int newL);
+		void printPos(bool newL);
 		void printPosError(void);
-		void printPosError(int newL);
+		void printPosError(bool newL);
 		void printDir(void);
-		void printDir(int newL);
+		void printDir(bool newL);
 		void printReached(void);
-		void printReached(int newL);
+		void printReached(bool newL);
 		void printDetails(void);
+		
+		void printConfig(void);
 		
 	private:    
  		uint8_t fingerIndex;			// index into the channel data for this finger

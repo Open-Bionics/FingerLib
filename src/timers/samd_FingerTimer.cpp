@@ -91,7 +91,6 @@ void TC4_Handler()
 		{
 			mSecCount = timer5cnt;
 			_milliSeconds++;
-			
 			if(_ptr2PiggybackFlag)
 			{
 				_ptr2PiggybackFunc();
