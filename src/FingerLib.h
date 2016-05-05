@@ -115,6 +115,9 @@ class Finger
 		
 	private:    
  		uint8_t fingerIndex;			// index into the channel data for this finger
+#if defined(ARDUINO_AVR_MEGA2560)
+		void setPWMFreq(uint8_t pin, uint8_t value);
+#endif
 		
 };
 

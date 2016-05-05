@@ -49,13 +49,22 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t sense, bool inv)
 		// enable the motor and disable finger inversion 
 		_fingers[fingerIndex].invert = inv;
 		_fingers[fingerIndex].motorEn = true;
-		//_fingers[fingerIndex].motorEn = false;
 		// set limits and initial values
 		setPosLimits(MIN_FINGER_POS,MAX_FINGER_POS);
 		setSpeedLimits(MIN_FINGER_SPEED,MAX_FINGER_SPEED);
 		writeSpeed(MAX_FINGER_SPEED);
 		writePos(MIN_FINGER_POS);
 		_fingers[fingerIndex].CurrDir = OPEN;					// set dir to OPEN after initial writePos to configure finger dir
+
+
+		// if using the Atmega2560, set the PWM freq to > 20kHz to prevent humming
+		// the PWM freq on the Zero is > 20kHz by default
+#if defined(ARDUINO_AVR_MEGA2560)
+		setPWMFreq(dir0, 0x01);		// set PWM frequency to max freq
+		setPWMFreq(dir1, 0x01);		// set PWM frequency to max freq
+#endif
+
+
 		// initialise the timer
 		if(_timerSetupFlag == false)
 		{
@@ -333,6 +342,41 @@ void Finger::printConfig(void)
 }
 
 
+#if defined(ARDUINO_AVR_MEGA2560)
+void Finger::setPWMFreq(uint8_t pin, uint8_t value)
+{
+	uint8_t timerNum;
+
+	timerNum = PWM_pin_to_timer(pin);
+	switch (timerNum)
+	{
+	case 0:
+		TCCR0B = (TCCR0B & 0xF8) | value;
+		break;
+	case 1:
+		TCCR1B = (TCCR1B & 0xF8) | value;
+		break;
+	case 2:
+		TCCR2B = (TCCR2B & 0xF8) | value;
+		break;
+	case 3:
+		TCCR3B = (TCCR3B & 0xF8) | value;
+		break;
+	case 4:
+		TCCR4B = (TCCR4B & 0xF8) | value;
+		break;
+	case 5:
+		TCCR5B = (TCCR5B & 0xF8) | value;
+		break;
+	default:
+		break;
+	}
+}
+#endif
+
+
+
+
 
 // controls motor PWM values based on current and target position using a proportional controller (triggered by interrupt)
 // total duration = 439us, therefore max freq = 2kHz. We use 200Hz (5ms), where 0.5ms = motor control, 4.5ms = program runtime
@@ -427,3 +471,5 @@ void motorControl(int fNum, signed int motorSpeed)
 	analogWrite(_fingers[fNum].Pin.dir[direction],motorSpeed);   //write fingerSpeed to one direction pin
 	analogWrite(_fingers[fNum].Pin.dir[!direction],0);			//write 0 to other direction pin
 }
+
+

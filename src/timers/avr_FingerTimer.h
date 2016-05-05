@@ -9,6 +9,8 @@
  *
  */ 
 
+//#define ARDUINO_AVR_MEGA2560
+
 #if defined(ARDUINO_AVR_MEGA2560)
 
 #ifndef AVR_FINGERTIMER_H_
@@ -45,6 +47,15 @@
 // calculate number of timer ticks per ms for each timer function
 #define MILLI_TIME        ms(1)					// 1ms		1kHz
 #define MOTOR_CTRL_TIME   ms(5)					// 5ms		200Hz
+
+#define NOT_A_PWM_PIN	(-1)
+#define PWM_pin_to_timer(p) ( (((p) == 4) || ((p) == 13)) ? 0 : \
+								( (((p) == 11) || ((p) == 12)) ? 1 : \
+								( (((p) == 9) || ((p) == 10)) ? 2 : \
+								( (((p) == 2) || ((p) == 3) || ((p) == 5)) ? 3 : \
+								( (((p) == 6) || ((p) == 7) || ((p) == 8)) ? 4 : \
+								( (((p) == 44) || ((p) == 45) || ((p) == 46)) ? 5 : \
+								NOT_A_PWM_PIN  ) ) ) ) ) )
 
 // function prototypes
 void _timerSetup(void);

@@ -9,6 +9,8 @@
  *
  */ 
 
+//#define ARDUINO_AVR_MEGA2560
+
 #if defined(ARDUINO_AVR_MEGA2560)
 
 #include "avr_FingerTimer.h"
