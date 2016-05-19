@@ -15,7 +15,7 @@
 
 #include "avr_FingerTimer.h"
 
-// used for customMillis()
+// used for millis()
 unsigned long _milliSeconds = 0;
 
 // create global pointers to functions and flags

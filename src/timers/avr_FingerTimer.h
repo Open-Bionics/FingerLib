@@ -19,9 +19,9 @@
 #include <Arduino.h>
 
 // select timer frequency
-#define TIMER_10KHZ
+//#define TIMER_10KHZ
 //#define TIMER_5KHZ
-//#define TIMER_2KHZ
+#define TIMER_2KHZ
 //#define TIMER_1KHZ
 
 #if defined(TIMER_10KHZ)
