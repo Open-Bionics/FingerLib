@@ -14,8 +14,8 @@
 
 uint8_t _TotalFingerCount = 0;					// the total number of attached _fingers
 static finger_t _fingers[MAX_FINGERS];			// static array of finger structures
-static char* _dirString[2] = {"OPEN","CLOSE"};	// direction string for printDir()
-	
+const char* _dirString[2] = {"OPEN","CLOSE"};	// direction string for printDir()
+ 
 bool _timerSetupFlag = false;					// flag to prevent multiple timer intialisations
 
 // Constructors ////////////////////////////////////////////////////////////////
@@ -96,11 +96,11 @@ bool Finger::attached(void)
 void Finger::writePos(int value)
 {
 	// constrain position value to limits
-	_fingers[fingerIndex].TargPos = constrain(value,_fingers[fingerIndex].MinPos,_fingers[fingerIndex].MaxPos);
+	_fingers[fingerIndex].TargPos = constrain((uint16_t) value,_fingers[fingerIndex].MinPos,_fingers[fingerIndex].MaxPos);
 	// calcuate new position error (to remove false positives in reachedPos() )
 	_fingers[fingerIndex].CurrErr = (signed int) (_fingers[fingerIndex].TargPos - _fingers[fingerIndex].CurrPos);
 	//determine direction of travel
-	if(value > _fingers[fingerIndex].CurrPos)
+	if((uint16_t) value > _fingers[fingerIndex].CurrPos)
 		_fingers[fingerIndex].CurrDir = CLOSE;
 	else
 		_fingers[fingerIndex].CurrDir = OPEN;	
@@ -119,7 +119,7 @@ void Finger::writeDir(int value)
 
 void Finger::writeSpeed(int value)
 {
-	_fingers[fingerIndex].TargSpeed = constrain(value,_fingers[fingerIndex].MinSpeed,_fingers[fingerIndex].MaxSpeed);
+	_fingers[fingerIndex].TargSpeed = constrain((uint16_t) value,_fingers[fingerIndex].MinSpeed,_fingers[fingerIndex].MaxSpeed);
 }
 
 uint8_t Finger::readDir(void)
@@ -201,7 +201,7 @@ bool Finger::reachedPos(void)
 bool Finger::reachedPos(uint16_t posErr)
 {
 	// return 1 if motor reaches custom target position
-	if(abs(readPosError()) < posErr)
+	if(abs(readPosError()) < (int16_t) posErr)
 		return 1;
 	else
 		return 0;
@@ -447,14 +447,14 @@ void motorControl(int fNum, signed int motorSpeed)
 	bool direction = 0;
 	
 	// split vectorised speed into speed and direction elements, and limit the results
-	if(motorSpeed < -((signed int)_fingers[fNum].MinSpeed))    
+	if(motorSpeed < (signed int) -_fingers[fNum].MinSpeed)    
 	{
-		(motorSpeed < -_fingers[fNum].MaxSpeed) ? motorSpeed = _fingers[fNum].MaxSpeed : motorSpeed = -motorSpeed;
+		(motorSpeed < (signed int) -_fingers[fNum].MaxSpeed) ? motorSpeed = _fingers[fNum].MaxSpeed : motorSpeed = -motorSpeed;
 		direction = OPEN;
 	}
-	else if(motorSpeed > ((signed int)_fingers[fNum].MinSpeed))
+	else if(motorSpeed > (signed int) _fingers[fNum].MinSpeed)
 	{
-		(motorSpeed > _fingers[fNum].MaxSpeed) ? motorSpeed = _fingers[fNum].MaxSpeed : motorSpeed;
+		(motorSpeed > (signed int) _fingers[fNum].MaxSpeed) ? motorSpeed = _fingers[fNum].MaxSpeed : motorSpeed;
 		direction = CLOSE;
 	}
 	else motorSpeed = 0;

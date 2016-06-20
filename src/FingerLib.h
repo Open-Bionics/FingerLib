@@ -67,7 +67,7 @@ typedef struct {
 } finger_t;
 
 class Finger
-{
+{ 
 	public:
 		Finger();
 		//Finger(int board, int left_right);
