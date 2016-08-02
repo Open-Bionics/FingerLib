@@ -1,3 +1,5 @@
+
+
 /*
  * FingerLib.cpp
  *
@@ -58,12 +60,8 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t sense, bool inv)
 
 
 		// if using the Atmega2560, set the PWM freq to > 20kHz to prevent humming
-		// the PWM freq on the Zero is > 20kHz by default
-#if defined(ARDUINO_AVR_MEGA2560)
-		//setPWMFreq(dir0, 0x01);		// set PWM frequency to max freq					DISABLED DUE TO POTENTIAL CSV MODE TIMING BUG
-		//setPWMFreq(dir1, 0x01);		// set PWM frequency to max freq					DISABLED DUE TO POTENTIAL CSV MODE TIMING BUG
-#endif
-
+		setPWMFreq(dir0, 0x01);		// set PWM frequency to max freq
+		setPWMFreq(dir1, 0x01);		// set PWM frequency to max freq					
 
 		// initialise the timer
 		if(_timerSetupFlag == false)
@@ -387,9 +385,8 @@ void fingerPosCtrl(void)
 	signed int motorSpeed = 0;			// used to calculate the motor speed as a vector (±255)
 	float m;							// the proportional gradient 
 	signed int vectorise = 1;			// changes the sign '±' of the value
-	
-	int proportionalOffset  = 150;         
-	signed int motorStopOffset = 20;      
+	int proportionalOffset = 150;
+	signed int motorStopOffset = 20;
 	
 	
 	if(_TotalFingerCount > 0)			// if _fingers are attached

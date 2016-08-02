@@ -37,12 +37,12 @@
 
 #define MAX_FINGERS			6			// maximum number of _fingers
 #define MAX_FINGER_SPEED	255			// maximum motor speed
-#define MIN_FINGER_SPEED	99			// minimum motor speed
+#define MIN_FINGER_SPEED	99			//99 // minimum motor speed
 #define MAX_FINGER_POS		973			// maximum motor position
 #define MIN_FINGER_POS		50			// minimum motor position
-// #define MAX_FINGER_POS		923			// maximum motor position
-// #define MIN_FINGER_POS		100			// minimum motor position
+
 #define POS_REACHED_TOLERANCE	50		// tolerance for posReached()
+
 
 typedef struct  {
 	uint8_t dir[2];
@@ -115,10 +115,9 @@ class Finger
 		
 	private:    
  		uint8_t fingerIndex;			// index into the channel data for this finger
-#if defined(ARDUINO_AVR_MEGA2560)
+
 		void setPWMFreq(uint8_t pin, uint8_t value);
-#endif
-		
+	
 };
 
 void motorControl(int fNum, signed int motorSpeed);
