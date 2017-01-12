@@ -58,7 +58,7 @@
 								NOT_A_PWM_PIN  ) ) ) ) ) )
 
 // function prototypes
-void _timerSetup(void);
+void _posCtrlTimerSetup(void);
 void _changePWMFreq(void);
 long customMillis(void);
 

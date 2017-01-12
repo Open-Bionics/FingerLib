@@ -48,9 +48,9 @@
 #define MOTOR_CTRL_TIME   ms(5)					// 5ms		200Hz
 
 // function prototypes
-void _timerSetup(void);
+void _posCtrlTimerSetup(void);
 void TC4_Handler();
-long customMillis(void);
+//long customMillis(void);
 
 void _passMotorPtr(void (*f)(void));
 void _attachFuncToTimer(void (*f)(void));

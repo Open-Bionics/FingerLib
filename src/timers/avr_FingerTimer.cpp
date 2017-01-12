@@ -37,8 +37,8 @@ void _attachFuncToTimer(void (*f)(void))
 	_ptr2PiggybackFlag = true;
 }
 
-// initialise timer registers for 5KHz timer (200uS)
-void _timerSetup(void)      
+// initialise timer registers for position control timer
+void _posCtrlTimerSetup(void)
 {
   _changePWMFreq();  // change PWM to 31KHz, so it is out of the audible range
                   
@@ -96,6 +96,7 @@ void _changePWMFreq(void)
 	TCCR3B = (TCCR3B & 0b11111000) | 0x01;
 	TCCR4B = (TCCR4B & 0b11111000) | 0x01;
 }
+
 
 long customMillis(void)   // similar to Millis(), but Millis() may not function due to using Timer5
 {

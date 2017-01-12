@@ -19,31 +19,27 @@
  * Entering any value greater than the number of motors stops all of the motors (>6)
  * 
  */
- 
-
-// MACROS
-#define IS_BETWEEN(x,a,b) ((((x)>=(a))&&((x)<=(b)))?(1):(0))        // check if value x is between values a and b
 
 // uncomment one of the following to select the board
-//#define ADULT_BOARD
-//#define FOUR_MOTOR_BOARD
-//#define CHILD_BOARD
 #define ALMOND_BOARD
+//#define CHESTNUT_BOARD
 
 // number of controllable fingers (number of motors)
-#if defined(ADULT_BOARD)
-#define NUM_FINGERS 5
-#elif defined(FOUR_MOTOR_BOARD)
+#if defined(ALMOND_BOARD)
 #define NUM_FINGERS 4
-#elif defined(CHILD_BOARD)
-#define NUM_FINGERS 3
-#elif defined(ALMOND_BOARD)
-#define NUM_FINGERS 5             // 6 motors instead of 5 as it is not hand (left/right) specific
+#elif defined(CHESTNUT_BOARD)
+#define NUM_FINGERS 5
+#else
+#error 'No board selected'
 #endif
 
 // uncomment one of the following to select which hand is used
 //int handFlag = LEFT;
 int handFlag = RIGHT;
+ 
+
+// MACROS
+#define IS_BETWEEN(x,a,b) ((((x)>=(a))&&((x)<=(b)))?(1):(0))        // check if value x is between values a and b
 
 // initialise Finger class to array
 Finger finger[NUM_FINGERS];
@@ -65,28 +61,32 @@ void setup()
 void loop()
 {
   int i;
+  
+  // if a serial char is available
   if(MYSERIAL.available())
   {
     fingerNum = (int) MYSERIAL.read() - 48;     // convert ASCII to number
-    if(IS_BETWEEN(fingerNum,0,(NUM_FINGERS-1)))
+    
+    if(IS_BETWEEN(fingerNum,0,(NUM_FINGERS-1))) // if the number entered is a valid finger number
     {
-      finger[fingerNum].open_close();     // toggle direction
+      finger[fingerNum].open_close();           // toggle finger direction
     }
-    else if(fingerNum == NUM_FINGERS) 
+    else if(fingerNum == NUM_FINGERS)           // else if the number entered is equal to the number of fingers
     {
       for(int i=0;i<NUM_FINGERS;i++)
       {
-        finger[i].open_close();     // toggle direction 
+        finger[i].open_close();                 // toggle direction of all fingers
       }
     }
-    else if(fingerNum > NUM_FINGERS) 
+    else                                        // else if another character is entered
     {
-      stopMotors();
+      stopMotors();                             // stop all motors
       MYSERIAL.println("MOTORS STOPPED");
       delay(500); 
     }
   }
 
+  // print current finger position
   for(i=0;i<NUM_FINGERS;i++)
   {
     MYSERIAL.print(names[i]);
@@ -99,14 +99,12 @@ void loop()
 
 }
 
+// stop all motors and maintain the current position
 void stopMotors(void)
 {
   int i;
   for(i=0;i<NUM_FINGERS;i++)
   {
     finger[i].stopMotor();
-    //finger[i].writePos(finger[i].readPos());
   }
 }
-
-//void fullyExtendMotors

@@ -9,12 +9,13 @@
  *
  */ 
 
+
 #if defined(ARDUINO_ARCH_SAMD)
 
 #include "samd_FingerTimer.h"
 
 // used for customMillis()
-unsigned long _milliSeconds = 0;
+//unsigned long _milliSeconds = 0;
 
 // create global pointers to functions and flags
 void (*_ptr2MotorFunc)(void) = NULL;
@@ -35,7 +36,7 @@ void _attachFuncToTimer(void (*f)(void))
 }
 
 // initialise timer registers for 5KHz timer (200uS)
-void _timerSetup(void)      
+void _posCtrlTimerSetup(void)
 {
   // Enable clock for TC4 
   REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TC4_TC5) ;
@@ -72,8 +73,8 @@ void _timerSetup(void)
   
 }
 
-// TC4 at 5KHz (200uS)
-void TC4_Handler()
+// TC4
+void TC4_Handler()			// also used as PWM tiemr for D16 & D17 (not used on any OB Samd hand) 
 {
 	static long timer5cnt = 0;      // main timer counter increments every call of the interrupt
 	static long servoCount = 0;     // time instance variable for motor position control
@@ -90,7 +91,7 @@ void TC4_Handler()
 		if((timer5cnt - mSecCount) >= MILLI_TIME)
 		{
 			mSecCount = timer5cnt;
-			_milliSeconds++;
+			//_milliSeconds++;
 			if(_ptr2PiggybackFlag)
 			{
 				_ptr2PiggybackFunc();
@@ -111,9 +112,9 @@ void TC4_Handler()
 	}
 }
 
-long customMillis(void)   // similar to Millis(), but Millis() may not function properly due to using TC4
-{
-	return _milliSeconds;
-}
+//long customMillis(void)   // similar to Millis(), but Millis() may not function properly due to using TC4
+//{
+//	return _milliSeconds;
+//}
 
 #endif /* defined(ARDUINO_ARCH_SAMD) */

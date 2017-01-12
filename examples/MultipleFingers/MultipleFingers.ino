@@ -19,20 +19,16 @@
  */
  
 // uncomment one of the following to select the board
-//#define ADULT_BOARD
-//#define FOUR_MOTOR_BOARD
-//#define CHILD_BOARD
 #define ALMOND_BOARD
+//#define CHESTNUT_BOARD
 
 // number of controllable fingers (number of motors)
-#if defined(ADULT_BOARD)
-#define NUM_FINGERS 5
-#elif defined(FOUR_MOTOR_BOARD)
+#if defined(ALMOND_BOARD)
 #define NUM_FINGERS 4
-#elif defined(CHILD_BOARD)
-#define NUM_FINGERS 3
-#elif defined(ALMOND_BOARD)
+#elif defined(CHESTNUT_BOARD)
 #define NUM_FINGERS 5
+#else
+#error 'No board selected'
 #endif
 
 // uncomment one of the following to select which hand is used
@@ -60,11 +56,14 @@ void loop()
   // set all of the fingers to OPEN
   openHand();
   MYSERIAL.println("Opening");
+  
   // give them time to OPEN
   delay(2000);
+  
   // set all of the fingers to CLOSE
   closeHand();
   MYSERIAL.println("Closing");
+  
   // give them time to CLOSE
   delay(2000);
 }
@@ -88,4 +87,6 @@ void closeHand(void)
     finger[i].close();
   }
 }
+
+
 
