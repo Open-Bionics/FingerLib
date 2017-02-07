@@ -623,8 +623,8 @@ void Finger::positionController(void)
 {
 	int16_t speed = 0;
 
-	// read finger position
-	_currPos = analogRead(_Pin.posSns);
+	//// read finger position
+	//_currPos = analogRead(_Pin.posSns);
 
 	// invert finger direction if enabled
 	if (_invert)

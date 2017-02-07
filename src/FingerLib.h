@@ -35,7 +35,11 @@
 // LIMITS
 #define MAX_FINGERS			6			// maximum number of _fingers
 #define MAX_FINGER_SPEED	255			// maximum motor speed
+#if defined(ARDUINO_AVR_MEGA2560)
+#define MIN_FINGER_SPEED	180			// minimum motor speed
+#else
 #define MIN_FINGER_SPEED	0			// minimum motor speed
+#endif
 #define MAX_FINGER_POS		973			// maximum motor position
 #define MIN_FINGER_POS		50			// minimum motor position
 #define POS_REACHED_TOLERANCE	50		// tolerance for posReached()

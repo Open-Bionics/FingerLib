@@ -24,9 +24,9 @@
 
 // number of controllable fingers (number of motors)
 #if defined(ALMOND_BOARD)
-#define NUM_FINGERS 4
-#elif defined(CHESTNUT_BOARD)
 #define NUM_FINGERS 5
+#elif defined(CHESTNUT_BOARD)
+#define NUM_FINGERS 4
 #else
 #error 'No board selected'
 #endif
