@@ -623,13 +623,6 @@ void Finger::positionController(void)
 {
 	int16_t speed = 0;
 
-	//// read finger position
-	//_currPos = analogRead(_Pin.posSns);
-
-	// invert finger direction if enabled
-	if (_invert)
-		_currPos = 1023 - _currPos;
-
 	// if motor enabled
 	if (_motorEn)
 		speed = _PID.run(_targPos, _currPos);
@@ -729,6 +722,19 @@ void Finger::motorControl(signed int motorSpeed)
 	// store current speed
 	_currSpeed = motorSpeed;
 
+
+
+	//MYSERIAL.print("F");
+	//MYSERIAL.print(fingerIndex);
+	//MYSERIAL.print(": ");
+	//MYSERIAL.print(_currSpeed);
+	//MYSERIAL.print("\t");
+
+	//if(fingerIndex == 3)
+	//	MYSERIAL.print("\n");
+
+
+
 #ifdef FORCE_SENSE
 	static signed int prevMotorSpeed[MAX_FINGERS] = { 0 };
 	static bool prevMotorDir[MAX_FINGERS] = { 0 };
@@ -752,8 +758,8 @@ void Finger::motorControl(signed int motorSpeed)
 		direction = !direction;
 
 	// write the speed to the motors
-	analogWrite(_Pin.dir[direction], motorSpeed);   //write fingerSpeed to one direction pin
-	analogWrite(_Pin.dir[!direction], 0);			//write 0 to other direction pin
+	analogWrite(_Pin.dir[direction], motorSpeed);   // write fingerSpeed to one direction pin
+	analogWrite(_Pin.dir[!direction], 0);			// write 0 to other direction pin
 }
 
 

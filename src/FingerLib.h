@@ -38,7 +38,7 @@
 #if defined(ARDUINO_AVR_MEGA2560)
 #define MIN_FINGER_SPEED	180			// minimum motor speed
 #else
-#define MIN_FINGER_SPEED	0			// minimum motor speed
+#define MIN_FINGER_SPEED	210 // 0			// minimum motor speed
 #endif
 #define MAX_FINGER_POS		973			// maximum motor position
 #define MIN_FINGER_POS		50			// minimum motor position

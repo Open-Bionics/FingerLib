@@ -19,8 +19,8 @@
  */
  
 // uncomment one of the following to select the board
-#define ALMOND_BOARD
-//#define CHESTNUT_BOARD
+//#define ALMOND_BOARD
+#define CHESTNUT_BOARD
 
 // number of controllable fingers (number of motors)
 #if defined(ALMOND_BOARD)

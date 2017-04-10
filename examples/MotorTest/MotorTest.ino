@@ -21,8 +21,8 @@
 */
 
 // uncomment one of the following to select the board
-#define ALMOND_BOARD
-//#define CHESTNUT_BOARD
+//#define ALMOND_BOARD
+#define CHESTNUT_BOARD
 
 // number of controllable fingers (number of motors)
 #if defined(ALMOND_BOARD)
@@ -36,7 +36,6 @@
 // uncomment one of the following to select which hand is used
 //int handFlag = LEFT;
 int handFlag = RIGHT;
-
 
 // MACROS
 #define IS_BETWEEN(x,a,b) ((((x)>=(a))&&((x)<=(b)))?(1):(0))        // check if value x is between values a and b

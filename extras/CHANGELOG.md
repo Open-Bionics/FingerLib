@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [2.0.2] - April 10th, 2017
+
+### Added 
+- All examples will now throw a compilation error if the boards have not been selected correctly
+
+### Changed
+- All examples now have the correct pin assignments for the Chestnut board variant
+- Increased the minimum movement speed to prevent the motors heating up when in stall
+
+
 ## [2.0.1] - Feb 7th, 2017
 
 ### Added
