@@ -8,10 +8,11 @@ FingerLib.h has been designed to closely resemble the Servo.h library, to allow 
 
 
 ## Supported Boards
-- [Almond board](https://www.openbionics.com/shop/pcb)
+- Almond board
 - Chestnut board
-- Atmega2560
-- Arduino Zero
+- Arduino UNO (Timer 1)
+- Atmega2560 (Timer 5)
+- Arduino Zero (TC4)
 
 ## License
 

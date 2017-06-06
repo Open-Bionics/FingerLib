@@ -9,9 +9,7 @@
  *
  */ 
 
-//#define ARDUINO_AVR_MEGA2560
-
-#if defined(ARDUINO_AVR_MEGA2560)
+#if defined(ARDUINO_ARCH_AVR)
 
 #ifndef AVR_FINGERTIMER_H_
 #define AVR_FINGERTIMER_H_
@@ -66,4 +64,4 @@ void _passMotorPtr(void (*f)(void));
 void _attachFuncToTimer(void (*f)(void));
 
 #endif /* AVR_FINGERTIMER_H_ */
-#endif /* defined(ARDUINO_AVR_MEGA2560) */
+#endif /* defined(ARDUINO_ARCH_AVR) */

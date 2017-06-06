@@ -45,7 +45,7 @@
 #define POS_REACHED_TOLERANCE	50		// tolerance for posReached()
 
 // BOARD SPECIFIC LIBRARIES
-#if defined(ARDUINO_AVR_MEGA2560)
+#if defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_UNO)
 	#ifndef MYSERIAL
 		#define MYSERIAL Serial
 	#endif
@@ -60,7 +60,7 @@
 		#include "current_sense/samd_CurrentSense.h"
 	#endif
 #else
-	#error "FingerLib only supports boards using an Arduino Mega 2560 (Almond PCB) or an Arduino Zero (Chestnut/Chestnut+)."
+	#error "FingerLib only supports boards using an Arduino Mega 2560 (Almond PCB), Arduino UNO or an Arduino Zero (Chestnut PCB)."
 #endif
 
 // SETTING SPECIFIC LIBRARIES
