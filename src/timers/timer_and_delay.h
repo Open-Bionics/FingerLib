@@ -52,4 +52,41 @@ private:
 };
 
 
+
+// NON_BLOCKING MILLI SECOND DELAY CLASS
+class MS_NB_DELAY
+{
+public:
+	MS_NB_DELAY();
+	void start(long delVal);
+	bool finished(void);
+	bool started(void);
+	long now(void);
+	void stop(void);
+
+	bool timeEllapsed(long delVal);
+private:
+	long _startTime;
+	long _interval;
+	bool _started = false;
+};
+
+// NON_BLOCKING MILLI SECOND TIMER CLASS
+class MS_NB_TIMER
+{
+public:
+	MS_NB_TIMER();
+	void start(void);
+	bool started(void);
+	long now(void);
+	long stop(void);
+
+	bool timeEllapsed(long interval);
+private:
+	long _startTime;
+	bool _started = false;
+
+};
+
+
 #endif /* TIMER_AND_DELAY_H_ */

@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.4] - Aug 10th, 2017
+
+### Added 
+- The ability to prevent the motor control from being called via an interrupt (Servo.h compatible)
+
+### Changed
+- The hardware timers now check the validity of the function pointers before calling them
+- Pins in library examples are now correct
+
 ## [2.0.3] - June 6th, 2017
 
 ### Added 
@@ -41,7 +50,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.0.0] - Jan 12th, 2017
 
 ### Added
-- Comments to pretty much everything
+- Commented to pretty much everything
 - Optional PID controller (enabled by default)
 - Optional force controller (only available on the Chestnut PCB)
 

@@ -9,34 +9,28 @@
  *
  */ 
 
- // DEBUG
-#define ARDUINO_ARCH_AVR
-#define ARDUINO_AVR_UNO
 
 #if defined(ARDUINO_ARCH_AVR)
 
 #include "avr_FingerTimer.h"
 
-// used for millis()
+ // used for millis()
 unsigned long _milliSeconds = 0;
 
 // create global pointers to functions and flags
-void (*_ptr2MotorFunc)(void) = NULL;
-void (*_ptr2PiggybackFunc)(void) = NULL;
-int _ptr2PiggybackFlag = false;
+void(*_ptr2MotorFunc)(void) = NULL;
+void(*_ptr2PiggybackFunc)(void) = NULL;
 
 // function to receive pointer to motor and assign to global pointer
-void _passMotorPtr(void (*f)(void))
+void _passMotorPtr(void(*f)(void))
 {
 	_ptr2MotorFunc = f;
 }
 
 // function to receive pointer for timer piggybacking and assign to global pointer
-void _attachFuncToTimer(void (*f)(void))
+void _attachFuncToTimer(void(*f)(void))
 {
 	_ptr2PiggybackFunc = f;
-	
-	_ptr2PiggybackFlag = true;
 }
 
 long customMillis(void)   // similar to Millis(), but Millis() may not function due to using Timer5
@@ -49,53 +43,49 @@ long customMillis(void)   // similar to Millis(), but Millis() may not function 
 // initialise timer registers for position control timer
 void _posCtrlTimerSetup(void)
 {
-  _changePWMFreq();  // change PWM to 31KHz, so it is out of the audible range
-                  
-  cli();	//stop interrupts
+	_changePWMFreq();			// change PWM to ~31KHz, so it is out of the audible range
 
-  // Timer5 5Khz timer 200uS
-  TCCR5A = 0;	// set entire TCCR5A register to 0
-  TCCR5B = 0;	// same for TCCR5B
-  TCNT5  = 0;	//initialize counter value to 0
-  // set compare match register for 5khz increments
-  OCR5A = CC_REG_VAL;	// = (16*10^6) / (1*5000) - 1 (must be <65536)
-  // turn on CTC mode
-  TCCR5B |= (1 << WGM52);
-  // Set CS50 bit for no prescaler for maximum precision
-  TCCR5B |= (1 << CS50);  
-  // enable timer compare interrupt
-  TIMSK5 |= (1 << OCIE5A);
+	cli();					//stop interrupts
 
-  sei();//allow interrupts
+	// Timer5
+	TCCR5A = 0;				// set entire TCCR5A register to 0
+	TCCR5B = 0;				// same for TCCR5B
+	TCNT5 = 0;				//initialize counter value to 0 
+	OCR5A = CC_REG_VAL;		// set compare match register for 5khz increments
+	TCCR5B |= (1 << WGM52);	// turn on CTC mode
+	TCCR5B |= (1 << CS50);	// Set CS50 bit for no prescaler for maximum precision
+	TIMSK5 |= (1 << OCIE5A);	// enable timer compare interrupt
+
+	sei();					//allow interrupts
 }
 
 // Timer5 
-ISR(TIMER5_COMPA_vect)    
+ISR(TIMER5_COMPA_vect)
 {
-  static long timer5cnt = 0;	// main timer counter increments every call of the interrupt
-  static long motorCount = 0	// time instance variable for motor position control
-  static long mSecCount = 0;	// time instance variable for millisecond counter
+	static long timer5cnt = 0;	// main timer counter increments every call of the interrupt
+	static long motorCount = 0	// time instance variable for motor position control
+		static long mSecCount = 0;	// time instance variable for millisecond counter
 
-  timer5cnt++;    // increment timer counter every
-  
-  // triggered once a millisecond
-  if((timer5cnt - mSecCount) >= MILLI_TIME)
-  {
-	  mSecCount = timer5cnt;
-	  _milliSeconds++;
-	  
-	  if(_ptr2PiggybackFlag)
-	  {
-		  _ptr2PiggybackFunc();
-	  }
-  }
-  
-  // position control for a single motor
-  if((timer5cnt - motorCount) >= MOTOR_CTRL_TIME)
-  {
-	  motorCount = timer5cnt;
-	_ptr2MotorFunc();
-  }
+	timer5cnt++;    // increment timer counter every
+
+					// triggered once a millisecond
+	if ((timer5cnt - mSecCount) >= MILLI_TIME)
+	{
+		mSecCount = timer5cnt;
+		_milliSeconds++;
+
+		if (_ptr2PiggybackFunc != NULL)
+			_ptr2PiggybackFunc();
+	}
+
+	// position control for a single motor
+	if ((timer5cnt - motorCount) >= MOTOR_CTRL_TIME)
+	{
+		motorCount = timer5cnt;
+		
+		if (_ptr2MotorFunc != NULL)
+			_ptr2MotorFunc();
+	}
 }
 
 void _changePWMFreq(void)
@@ -111,24 +101,19 @@ void _changePWMFreq(void)
 // initialise timer registers for position control timer
 void _posCtrlTimerSetup(void)
 {
-	//_changePWMFreq();  // change PWM to 31KHz, so it is out of the audible range
 
-	cli();	//stop interrupts
+	cli();					//stop interrupts
 
-	// Timer1 2Khz timer 500uS
-	TCCR1A = 0;	// set entire TCCR1A register to 0
-	TCCR1B = 0;	// same for TCCR1B
-	TCNT1 = 0;	//initialize counter value to 0
-	// set compare match register for 5khz increments
-	OCR1A = CC_REG_VAL;	// = (16*10^6) / (1*2000) - 1 (must be <65536)
-	// turn on CTC mode
-	TCCR1B |= (1 << WGM12);
-	// Set CS50 bit for no prescaler for maximum precision
-	TCCR1B |= (1 << CS10);
-	// enable timer compare interrupt
-	TIMSK1 |= (1 << OCIE1A);
+							// Timer1
+	TCCR1A = 0;				// set entire TCCR1A register to 0
+	TCCR1B = 0;				// same for TCCR1B
+	TCNT1 = 0;				//initialize counter value to 0
+	OCR1A = CC_REG_VAL;		// set compare match register to the value set by avr_FingerTimer.h	
+	TCCR1B |= (1 << WGM12);	// turn on CTC mode	
+	TCCR1B |= (1 << CS10);	// Set CS50 bit for no prescaler for maximum precision	
+	TIMSK1 |= (1 << OCIE1A);// enable timer compare interrupt
 
-	sei();//allow interrupts
+	sei();					//allow interrupts
 }
 
 // Timer1
@@ -140,7 +125,7 @@ ISR(TIMER1_COMPA_vect)
 
 	timer1cnt++;    // increment timer counter
 
-	// triggered once a millisecond
+					// triggered once a millisecond
 	if ((timer1cnt - mSecCount) >= MILLI_TIME)
 	{
 		mSecCount = timer1cnt;

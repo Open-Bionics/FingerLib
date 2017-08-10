@@ -290,7 +290,6 @@ Toggle the finger between open and closed
 
 ####Syntax
 Finger.open_close()
-
 Finger.open_close(dir)
 
 ####Parameters
@@ -504,6 +503,36 @@ Finger.motorEnable(val)
 
 ####Parameters
 val: boolean. true will enable the motor. false will disable the motor
+
+####Returns
+none
+
+
+####enableInterrupt
+
+####Description
+Enable the motor control to be called via an interrupt (enabled by default)
+
+####Syntax
+Finger.enableInterrupt()
+
+####Parameters
+none
+
+####Returns
+none
+
+
+####disableInterrupt
+
+####Description
+Disable the motor control being called via an interrupt. The motor control function '_fingerControlCallback()' must be called manually in the main loop in order for the motors to move.
+
+####Syntax
+Finger.disableInterrupt()
+
+####Parameters
+none
 
 ####Returns
 none

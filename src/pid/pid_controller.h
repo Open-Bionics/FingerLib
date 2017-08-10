@@ -63,7 +63,10 @@ class PID_CONTROLLER
 
 		US_NB_TIMER _sampleTimer;						// duration of sample in us
 
-		double _min, _max;								// output limits
+		// double _min, _max;								// output limits
+
+		double _min = DEFAULT_LIMIT_MIN;				// OllyEdit
+		double _max = DEFAULT_LIMIT_MAX;				// OllyEdit
 
 		float _Kp, _Ki, _Kd;							// PID controller gains
 

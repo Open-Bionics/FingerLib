@@ -15,16 +15,48 @@
 #include <inttypes.h>
 #include <Arduino.h>
 
-#include "timers/timer_and_delay.h"
 
 // CHANGE SETTINGS
 // Uncomment out the following to use PID pos control instead of custom P control
 #define USE_PID					
 
-#if defined(ARDUINO_ARCH_SAMD)
-// Uncomment the following to enable force/current sensing
+// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only)
 #define FORCE_SENSE
+
+
+
+
+
+// GENERIC LIBRARIES
+#include "timers/timer_and_delay.h"
+
+// BOARD SPECIFIC LIBRARIES
+#if defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_UNO)
+	#define MYSERIAL Serial
+	#include "timers/avr_FingerTimer.h"
+#elif defined(ARDUINO_ARCH_SAMD)
+	#define MYSERIAL SerialUSB
+	#include "timers/samd_FingerTimer.h"
+#else
+	#error FingerLib only supports boards using an Arduino Mega 2560, Arduino UNO, Arduino Zero, Almond PCB or Chestnut PCB.
 #endif
+
+// SETTING SPECIFIC LIBRARIES
+#if	defined(USE_PID)
+	#include "pid/pid_controller.h"
+#endif 
+
+#if defined(FORCE_SENSE)
+	#if defined(ARDUINO_ARCH_SAMD)
+		#include "current_sense/samd_CurrentSense.h"
+	#else
+		#error Force sensing is only available on the Arduino Zero or Chestnut PCB.
+	#endif
+#endif
+
+
+
+
 
 // BOOLEANS
 #define OPEN	0	
@@ -38,47 +70,31 @@
 #if defined(ARDUINO_AVR_MEGA2560)
 #define MIN_FINGER_SPEED	180			// minimum motor speed
 #else
-#define MIN_FINGER_SPEED	210 // 0			// minimum motor speed
+#define MIN_FINGER_SPEED	0			// minimum motor speed
 #endif
+
 #define MAX_FINGER_POS		973			// maximum motor position
 #define MIN_FINGER_POS		50			// minimum motor position
+
+
 #define POS_REACHED_TOLERANCE	50		// tolerance for posReached()
 
-// BOARD SPECIFIC LIBRARIES
-#if defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_UNO)
-	#ifndef MYSERIAL
-		#define MYSERIAL Serial
-	#endif
-	#include "timers/avr_FingerTimer.h"
-#elif defined(ARDUINO_ARCH_SAMD)
-	#ifndef MYSERIAL
-		#define MYSERIAL SerialUSB
-	#endif
-	#include "timers/samd_FingerTimer.h"
 
-	#if defined(FORCE_SENSE)
-		#include "current_sense/samd_CurrentSense.h"
-	#endif
-#else
-	#error "FingerLib only supports boards using an Arduino Mega 2560 (Almond PCB), Arduino UNO or an Arduino Zero (Chestnut PCB)."
-#endif
 
-// SETTING SPECIFIC LIBRARIES
-#ifdef USE_PID
-	#include "pid/pid_controller.h"
-#endif 
 
-#ifdef FORCE_SENSE
-#define CURR_SPIKE_DUR_US	(double) 50000				// us - duration of peak to discard
 
-// force and current conversion values
-#define MOTOR_DRIVER_CURRENT_LIMIT		(float) 425		// mA
-#define CURRENT_SENSE_SATURATION_VAL	(float) 950		// max ADC value
-#define ADC_VALS_PER_MA_DRAW			(float) (CURRENT_SENSE_SATURATION_VAL/MOTOR_DRIVER_CURRENT_LIMIT)	// number of ADC values per mA draw of motor
 
-// Y = MX + C, where Y = force, X = current draw
-#define CURRENT_SENSE_CONST_M			(float) 7.4833	// generated from the equation of the line from the force-current graph
-#define CURRENT_SENSE_CONST_C			(float) 46.444	// generated from the equation of the line from the force-current graph
+#if	defined(FORCE_SENSE)
+	#define CURR_SPIKE_DUR_US	(double) 50000				// us - duration of peak to discard
+
+	// force and current conversion values
+	#define MOTOR_DRIVER_CURRENT_LIMIT		(float) 425		// mA
+	#define CURRENT_SENSE_SATURATION_VAL	(float) 950		// max ADC value
+	#define ADC_VALS_PER_MA_DRAW			(float) (CURRENT_SENSE_SATURATION_VAL/MOTOR_DRIVER_CURRENT_LIMIT)	// number of ADC values per mA draw of motor
+
+	// Y = MX + C, where Y = force, X = current draw
+	#define CURRENT_SENSE_CONST_M			(float) 7.4833	// generated from the equation of the line from the force-current graph
+	#define CURRENT_SENSE_CONST_C			(float) 46.444	// generated from the equation of the line from the force-current graph
 #endif
 
 // FINGER PINS
@@ -90,6 +106,23 @@ typedef struct _FingerPin
 	uint8_t forceSns;
 #endif
 } FingerPin;
+
+// VECTOR PROPERTIES
+typedef struct _LimitProperties
+{
+	double min;
+	double max;
+	bool reached;
+} LimitProperties;
+
+typedef struct _VectorProperties
+{
+	double prev;
+	double curr;
+	double targ;
+	double error;
+	LimitProperties limit;
+} VectorProperties;
 
 
 // FINGER CLASS
@@ -157,6 +190,8 @@ class Finger
 		void disableMotor(void);			// disable the motor by setting the speed to 0
 		void enableMotor(void);				// re-enable the motor
 		void motorEnable(bool motorEn);		// set motor to be enabled/disabled
+		void enableInterrupt(void);			// enable timer interrupt for motor control
+		void disableInterrupt(void);		// disable timer interrupt for motor control
 #ifdef FORCE_SENSE
 		void enableForceSense(void);		// enable force sensing
 		void disableForceSense(void);		// disable force sensing
@@ -190,35 +225,25 @@ class Finger
 		PID_CONTROLLER _PID;
 #endif
 		uint8_t fingerIndex;		// current finger number
-		FingerPin _Pin;				// finger pin struct (dir, pos, force)
+		FingerPin _pin;				// finger pin struct (dir, pos, force)
+
 		bool _isActive = false;		// flag to indicate if finger is enabled
 		bool _invert;				// finger inversion flag
 		bool _motorEn;				// motor enable flag
+		bool _interruptEn;			// flag to set whether to use the timer interrupt for motor control
 #ifdef FORCE_SENSE
 		bool _forceSenseEn = false;	// force sense is enable flag
 #endif
 
-		uint16_t _currPos;			// current position
-		uint16_t _targPos;			// target position
-		int16_t _currErr;			// position error
-		uint16_t _minPos;			// position limit
-		uint16_t _maxPos;			// position limit
 
-		uint8_t _currDir;			// current direction
-
-		int16_t _currSpeed;			// current speed
-		uint16_t _targSpeed;		// target speed
-		uint16_t _minSpeed;			// speed limit 
-		uint16_t _maxSpeed;			// speed limit
-
+		// PROPERTIES
+		VectorProperties _pos;		// position properties (prev, curr, targ, error, limit)
+		VectorProperties _dir;		// direction properties (curr)
+		VectorProperties _speed;	// speed properties (prev, curr, targ, error, limit)		
 #ifdef FORCE_SENSE
-		uint16_t _currForce;		// current force (as ADC value)
-		uint16_t _targForce;		// target force (as ADC value)
-		bool _targForceDir;			// direction of force
-		bool _forceLimitFlag;		// flag to indicate if force limit has been reached
-		uint16_t _maxForce;			// force limit (as ADC value)
-		uint16_t _minForce;			// force limit (as ADC value)
+		VectorProperties _force;	// force properties (prev, curr, targ, error, limit) (all stored as ADC values instead of N)
 #endif
+
 
 		void positionController(void);			// position controller (either PID or custom P)
 		void motorControl(int motorSpeed);		// split the vectorised motor speed into direction and speed values and write to the motor
@@ -231,9 +256,9 @@ class Finger
 
 
 // INTERRUPT HANDLERS
-void _fingerControlInterrupt(void);		// runs the control() function of a Finger instance at each call by the timer interrupt
+void _fingerControlCallback(void);		// runs the control() function of a Finger instance at each call by the timer interrupt
 #ifdef FORCE_SENSE
-void _currentSenseInterrupt(void);		// runs the readCurrentSns() function of a Finger instance at each call 
+void _currentSenseCallback(void);		// runs the readCurrentSns() function of a Finger instance at each call 
 #endif
 
 // HARDWARE SPECIFIC FUNCTIONS

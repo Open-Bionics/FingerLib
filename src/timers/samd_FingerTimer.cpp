@@ -20,7 +20,6 @@
 // create global pointers to functions and flags
 void (*_ptr2MotorFunc)(void) = NULL;
 void (*_ptr2PiggybackFunc)(void) = NULL;
-int _ptr2PiggybackFlag = false;
 
 // function to receive pointer to motor and assign to global pointer
 void _passMotorPtr(void (*f)(void))
@@ -32,7 +31,6 @@ void _passMotorPtr(void (*f)(void))
 void _attachFuncToTimer(void (*f)(void))
 {
 	_ptr2PiggybackFunc = f;
-	_ptr2PiggybackFlag = true;
 }
 
 // initialise timer registers for 5KHz timer (200uS)
@@ -74,7 +72,7 @@ void _posCtrlTimerSetup(void)
 }
 
 // TC4
-void TC4_Handler()			// also used as PWM tiemr for D16 & D17 (not used on any OB Samd hand) 
+void TC4_Handler()			// also used as PWM timer for D16 & D17 (not used on any OB Samd hand) 
 {
 	static long timer5cnt = 0;      // main timer counter increments every call of the interrupt
 	static long servoCount = 0;     // time instance variable for motor position control
@@ -91,18 +89,19 @@ void TC4_Handler()			// also used as PWM tiemr for D16 & D17 (not used on any OB
 		if((timer5cnt - mSecCount) >= MILLI_TIME)
 		{
 			mSecCount = timer5cnt;
-			//_milliSeconds++;
-			if(_ptr2PiggybackFlag)
-			{
+			
+			if(_ptr2PiggybackFunc != NULL)
 				_ptr2PiggybackFunc();
-			}
+			
 		}
  
 		// position control for a single motor
 		if((timer5cnt - servoCount) >= MOTOR_CTRL_TIME)
 		{
 			servoCount = timer5cnt;
-			_ptr2MotorFunc();
+
+			if (_ptr2MotorFunc != NULL)
+				_ptr2MotorFunc();
 		}
 	}
   
