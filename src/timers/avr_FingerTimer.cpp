@@ -63,8 +63,8 @@ void _posCtrlTimerSetup(void)
 ISR(TIMER5_COMPA_vect)
 {
 	static long timer5cnt = 0;	// main timer counter increments every call of the interrupt
-	static long motorCount = 0	// time instance variable for motor position control
-		static long mSecCount = 0;	// time instance variable for millisecond counter
+	static long motorCount = 0;	// time instance variable for motor position control
+	static long mSecCount = 0;	// time instance variable for millisecond counter
 
 	timer5cnt++;    // increment timer counter every
 

@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.5] - Aug 14th, 2017
+
+### Added 
+- Added missing semicolon to avr_FingerTimer.cpp
+
+
 ## [2.0.4] - Aug 10th, 2017
 
 ### Added 
