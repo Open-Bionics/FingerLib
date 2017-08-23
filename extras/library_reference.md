@@ -1,685 +1,685 @@
 # FingerLib.h - Finger Control Library Reference
 
 
-##Initialisation
+## Initialisation
 
-###attach()
+### attach()
 
-####Description
+#### Description
 Attach pins to a finger using position control and force control, and allow the direction to be inverted
 
-####Syntax
+#### Syntax
 Finger.attach(dir0, dir1, posSns)
 
 Finger.attach(dir0, dir1, posSns, inv)
 						
 Finger.attach(dir0, dir1, posSns, forceSns, inv)
 
-####Parameters
+#### Parameters
 dir1, dir1: the motor direction pins
 
 posSns: the analog motor position pin
 
 inv: boolean. true will invert motor position and direction. false will not invert the motors
 
-####Returns
+#### Returns
 byte: returns the finger number
 
 
-###detach()
+### detach()
 
-####Description
+#### Description
 Deactivate the finger
 
-####Syntax
+#### Syntax
 Finger.detach()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-###attached()
+### attached()
 
-####Description
+#### Description
 Return true if the current finger is attached and initialised correctly 
 
-####Syntax
+#### Syntax
 Finger.attached()
 
-####Parameters
+#### Parameters
 none
 
-#####Returns
+##### Returns
 boolean: true if finger is attached correctly. false if finger is not attached
 
 
-###invertFingerDir()
+### invertFingerDir()
 
-####Description
+#### Description
 Set the motor to be inverted
 
-####Syntax
+#### Syntax
 Finger.invertFingerDir()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-##Limits
+## Limits
 
-###setPosLimits()
+### setPosLimits()
 
-####Description
+#### Description
 Set the maximum and minimum position limits
 
-####Syntax
+#### Syntax
 Finger.setPosLimits(min, max)
 
-####Parameters
+#### Parameters
 min: the minimum position limit (default 50)
 
 max: the maximum position limit (default 973)
 
-####Returns
+#### Returns
 none
 
 
-###setSpeedLimits()
+### setSpeedLimits()
 
-####Description
+#### Description
 Set the maximum and minimum speed limits
 
-####Syntax
+#### Syntax
 Finger.setSpeedLimits(min, max)
 
-####Parameters
+#### Parameters
 min: the minimum speed limit (default 50)
 
 max: the maximum speed limit (default 973)
 
-####Returns
+#### Returns
 none
 
 
-###setForceLimits()
+### setForceLimits()
 
-####Description
+#### Description
 Set the maximum and minimum force limits. Note, this is only available on the Chestnut board.
 
-####Syntax
+#### Syntax
 Finger.setForceLimits(min, max)
 
-####Parameters
+#### Parameters
 min: the minimum force limit (default 50)
 
 max: the maximum force limit (default 973)
 
-####Returns
+#### Returns
 none
 
 
 
 
-##Position
+## Position
 
-###writePos()
+### writePos()
 
-####Description
+#### Description
 Write a target position to the finger
 
-####Syntax
+#### Syntax
 Finger.writePos(value)
 
-####Parameters
+#### Parameters
 value: the target position of the finger (0 - 1024)
 
-####Returns
+#### Returns
 none
 
 
-###movePos()
+### movePos()
 
-####Description
+#### Description
 Write a change in position to the finger
 
-####Syntax
+#### Syntax
 Finger.movePos(value)
 
-####Parameters
+#### Parameters
 value: the change in position of the finger
 
-####Returns
+#### Returns
 none
 
 
-###readPos()
+### readPos()
 
-####Description
+#### Description
 Read the current finger position
 
-####Syntax
+#### Syntax
 Finger.readPos()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 int: the current position of the finger (0 - 1024)
 
 
-###readPosError()
+### readPosError()
 
-####Description
+#### Description
 Read the error between the current position and the target position
 
-####Syntax
+#### Syntax
 Finger.readPosError()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 int: the error between the current and the target position of the finger (0 - 1024)
 
 
-###readTargetPos()
+### readTargetPos()
 
-####Description
+#### Description
 Read the target position
 
-####Syntax
+#### Syntax
 Finger.readTargetPos()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 int: the target position (0 - 1024)
 
 
-###reachedPos()
+### reachedPos()
 
-####Description
+#### Description
 Returns true if position reached. i.e. if the position error is less than either a default value (50) or a user specified value
 
-####Syntax
+#### Syntax
 Finger.reachedPos()
 Finger.reachedPos(posErr)
 
-####Parameters
+#### Parameters
 posErr: set a custom position error threshold
 
-####Returns
+#### Returns
 boolean: true if the position error is less than either a default value (50) or a user specified value
 
 
 
 
-##Direction
+## Direction
 
-###writeDir()
+### writeDir()
 
-####Description
+#### Description
 Write a target direction to the finger
 
-####Syntax
+#### Syntax
 Finger.writeDir(value)
 
-####Parameters
+#### Parameters
 value: the target direction of the finger (0 - 1, OPEN - CLOSE)
 
-####Returns
+#### Returns
 none
 
 
-###readDir()
+### readDir()
 
-####Description
+#### Description
 Read the current finger direction
 
-####Syntax
+#### Syntax
 Finger.readDir()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 boolean: the current direction of the finger (0 - 1, OPEN - CLOSE)
 
 
-###open()
+### open()
 
-####Description
+#### Description
 Open the finger
 
-####Syntax
+#### Syntax
 Finger.open()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-###close()
+### close()
 
-####Description
+#### Description
 Close the finger
 
-####Syntax
+#### Syntax
 Finger.close()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-###open_close()
+### open_close()
 
-####Description
+#### Description
 Toggle the finger between open and closed
 
-####Syntax
+#### Syntax
 Finger.open_close()
 Finger.open_close(dir)
 
-####Parameters
+#### Parameters
 dir: set the finger to a direction (0 - 1, OPEN - CLOSE)
 
-####Returns
+#### Returns
 none
 
 
 
 
-##Speed
+## Speed
 
-###writeSpeed()
+### writeSpeed()
 
-####Description
+#### Description
 Write a target speed to the finger
 
-####Syntax
+#### Syntax
 Finger.writeSpeed(value)
 
-####Parameters
+#### Parameters
 value: the target speed of the finger (0 - 255)
 
-####Returns
+#### Returns
 none
 
 
-###readSpeed()
+### readSpeed()
 
-####Description
+#### Description
 Read the current finger speed
 
-####Syntax
+#### Syntax
 Finger.readSpeed()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 byte: the current speed of the finger (0 - 255)
 
 
-###readTargetSpeed()
+### readTargetSpeed()
 
-####Description
+#### Description
 Read the target finger speed
 
-####Syntax
+#### Syntax
 Finger.readTargetSpeed()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 byte: the target speed of the finger (0 - 255)
 
 
 
 
-##Force
+## Force
 
-###writeForce()
+### writeForce()
 
-####Description
+#### Description
 Write a target force to the finger, in a particular direction
 
-####Syntax
+#### Syntax
 Finger.writeForce(value, dir)
 
-####Parameters
+#### Parameters
 value: the target force of the finger (0.0N - 60N)
 
 dir: the direction to apply the force (0 - 1, OPEN - CLOSE)
 
-####Returns
+#### Returns
 none
 
 
-###readForce()
+### readForce()
 
-####Description
+#### Description
 Read the current finger force
 
-####Syntax
+#### Syntax
 Finger.readForce()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 float: the current force of the finger. If force sense is not enabled, return blank (-1)
 
 
-###readCurrent()
+### readCurrent()
 
-####Description
+#### Description
 Read the finger force as an ADC value
 
-####Syntax
+#### Syntax
 Finger.readCurrent()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 int: the current force of the finger, as an ADC value (0 - 1024)
 
 
-###reachedForceLimit()
+### reachedForceLimit()
 
-####Description
+#### Description
 Return true if the force limit is reached (force limit is set by setForceLimits())
 
-####Syntax
+#### Syntax
 Finger.reachedForceLimit()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 boolean: true if the force limit is reached. false if the force limit has not been reached
 
 
-###convertADCToForce()
+### convertADCToForce()
 
-####Description
+#### Description
 Convert an ADC value to a force value, using the predefined conversions constants in FingerLib.h
 
-####Syntax
+#### Syntax
 Finger.convertADCToForce(val)
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 float: the converted force value, in Newtons
 
 
-###convertForceToADC()
+### convertForceToADC()
 
-####Description
+#### Description
 Convert a force value to an ADC, using the predefined conversions constants in FingerLib.h
 
-####Syntax
+#### Syntax
 Finger.convertForceToADC(val)
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 float: the converted ADC value (0 - 1024)
 
 
 
 
-##Stop/Start
+## Stop/Start
 
-###stopMotor()
+### stopMotor()
 
-####Description
+#### Description
 Stop the motor and maintain the current position
 
-####Syntax
+#### Syntax
 Finger.stopMotor()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-####disableMotor
+#### disableMotor
 
-####Description
+#### Description
 Disable the motor by setting the speed to 0
 
-####Syntax
+#### Syntax
 Finger.disableMotor()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-####enableMotor
+#### enableMotor
 
-####Description
+#### Description
 Enable the motor
 
-####Syntax
+#### Syntax
 Finger.enableMotor()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-####motorEnable
+#### motorEnable
 
-####Description
+#### Description
 Set the motor to be enabled/disabled
 
-####Syntax
+#### Syntax
 Finger.motorEnable(val)
 
-####Parameters
+#### Parameters
 val: boolean. true will enable the motor. false will disable the motor
 
-####Returns
+#### Returns
 none
 
 
-####enableInterrupt
+#### enableInterrupt
 
-####Description
+#### Description
 Enable the motor control to be called via an interrupt (enabled by default)
 
-####Syntax
+#### Syntax
 Finger.enableInterrupt()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-####disableInterrupt
+#### disableInterrupt
 
-####Description
+#### Description
 Disable the motor control being called via an interrupt. The motor control function '_fingerControlCallback()' must be called manually in the main loop in order for the motors to move.
 
-####Syntax
+#### Syntax
 Finger.disableInterrupt()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-####enableForceSense
+#### enableForceSense
 
-####Description
+#### Description
 Enable force sensing (only available on the Chestnut board)
 
-####Syntax
+#### Syntax
 Finger.enableForceSense()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-####disableForceSense
+#### disableForceSense
 
-####Description
+#### Description
 Disable force sensing
 
-####Syntax
+#### Syntax
 Finger.disableForceSense()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-##Print
+## Print
 
-###printPos()
+### printPos()
 
-####Description
+#### Description
 Print the current position of the finger in the format ‘Pos ####’. (optional ‘\n’ after the position)
 value)
 
-####Syntax
+#### Syntax
 Finger.printPos()
 Finger.printPos(newLine)
 
-####Parameters
+#### Parameters
 newLine: boolean. true will print a new line after the value has been printed. false will not print a new line 
 
-####Returns
+#### Returns
 none
 
 
-###printPosError()
+### printPosError()
 
-####Description
+#### Description
 Print the position error in the format 'Err ####’. (optional ‘\n’ after the position)
 value)
 
-####Syntax
+#### Syntax
 Finger.printPosError()
 Finger.printPosError(newLine)
 
-####Parameters
+#### Parameters
 newLine: boolean. true will print a new line after the value has been printed. false will not print a new line 
 
-####Returns
+#### Returns
 none
 
 
-###printDir()
+### printDir()
 
-####Description
+#### Description
 Print the current direction in the format 'Dir ####’. (optional ‘\n’ after the position)
 value)
 
-####Syntax
+#### Syntax
 Finger.printDir()
 Finger.printDir(newLine)
 
-####Parameters
+#### Parameters
 newLine: boolean. true will print a new line after the value has been printed. false will not print a new line 
 
-####Returns
+#### Returns
 none
 
 
-###printReached()
+### printReached()
 
-####Description
+#### Description
 Print whether the target position has been reached, in the format 'Reached #’. (optional ‘\n’ after the position)
 value)
 
-####Syntax
+#### Syntax
 Finger.printReached()
 Finger.printReached(newLine)
 
-####Parameters
+#### Parameters
 newLine: boolean. true will print a new line after the value has been printed. false will not print a new line 
 
-####Returns
+#### Returns
 none
 
 
-###printSpeed()
+### printSpeed()
 
-####Description
+#### Description
 Print the current speed in the format 'Speed ####’. (optional ‘\n’ after the position)
 value)
 
-####Syntax
+#### Syntax
 Finger.printSpeed()
 Finger.printSpeed(newLine)
 
-####Parameters
+#### Parameters
 newLine: boolean. true will print a new line after the value has been printed. false will not print a new line 
 
-####Returns
+#### Returns
 none
 
 
-###printDetails()
+### printDetails()
 
-####Description
+#### Description
 Print the current finger number, position, direction, speed and whether the target position has been reached, followed by a new line character
 
-####Syntax
+#### Syntax
 Finger.printDetails()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
 
 
-###printConfig()
+### printConfig()
 
-####Description
+#### Description
 Print the current finger number, assigned pins and the limits, followed by a new line character
 
-####Syntax
+#### Syntax
 Finger.printConfig()
 
-####Parameters
+#### Parameters
 none
 
-####Returns
+#### Returns
 none
