@@ -53,13 +53,13 @@ motorEnable	KEYWORD2
 enableForceSense	KEYWORD2
 disableForceSense	KEYWORD2
 
-printPos	KEYWORD2
-printPosError	KEYWORD2
-printDir	KEYWORD2
-printReached	KEYWORD2
-pritSpeed	KEYWORD2
-printDetails	KEYWORD2
-printConfig	KEYWORD2
+# printPos	KEYWORD2
+# printPosError	KEYWORD2
+# printDir	KEYWORD2
+# printReached	KEYWORD2
+# pritSpeed	KEYWORD2
+# printDetails	KEYWORD2
+# printConfig	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

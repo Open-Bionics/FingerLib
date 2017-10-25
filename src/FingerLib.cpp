@@ -25,10 +25,6 @@ Finger::Finger()
 {
 	if (fingerIndex >= MAX_FINGERS)				// if too many fingers have been initialised
 	{
-		MYSERIAL.print("ERROR - Too many fingers attached (");
-		MYSERIAL.print(fingerIndex);
-		MYSERIAL.println(")");
-
 		fingerIndex = -1;						// set current finger number to be empty
 		_isActive = false;						// set current finger as inactive 
 	}
@@ -133,7 +129,7 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 	}
 	else								// if the current finger number isn't valid
 	{
-		MYSERIAL.println("ERROR - Too many fingers attached");
+		//MYSERIAL.println("ERROR - Too many fingers attached");
 		_isActive = false;				// set the current finger to be inactive 
 		return (uint8_t)(-1);			// return BLANK
 	}
@@ -471,140 +467,140 @@ void Finger::disableForceSense(void)
 
 // PRINT
 
-// print the current position (no new line)
-void Finger::printPos(void)
-{
-	printPos(0);
-}
-
-// print the current position (new line)
-void Finger::printPos(bool newL)
-{
-	MYSERIAL.print("Pos ");
-	MYSERIAL.print(readPos());
-	MYSERIAL.print("  ");
-	if (newL)
-		MYSERIAL.print("\n");
-}
-
-// print the current position error (no new line)
-void Finger::printPosError(void)
-{
-	printPosError(0);
-}
-
-// print the current position error (new line)
-void Finger::printPosError(bool newL)
-{
-	MYSERIAL.print("Err ");
-	MYSERIAL.print(readPosError());
-	MYSERIAL.print("  ");
-	if (newL)
-		MYSERIAL.print("\n");
-}
-
-// print the current direction (no new line)
-void Finger::printDir(void)
-{
-	printDir(0);
-}
-
-// print the current direction (new line)
-void Finger::printDir(bool newL)
-{
-	const char* _dirString[2] = { "OPEN","CLOSE" };	// direction string
-
-	MYSERIAL.print("Dir ");
-	MYSERIAL.print(_dirString[readDir()]);
-	MYSERIAL.print("  ");
-	if (newL)
-		MYSERIAL.print("\n");
-}
-
-// print whether the target position has been reached (no new line)
-void Finger::printReached(void)
-{
-	printReached(0);
-}
-
-// print whether the target position has been reached (new line)
-void Finger::printReached(bool newL)
-{
-	MYSERIAL.print("Reached ");
-	MYSERIAL.print(reachedPos());
-	MYSERIAL.print("  ");
-	if (newL)
-		MYSERIAL.print("\n");
-}
-
-// print the current speed (no new line)
-void Finger::printSpeed(void)
-{
-	printSpeed(0);
-}
-
-// print the current speed (new line)
-void Finger::printSpeed(bool newL)
-{
-	MYSERIAL.print("Speed ");
-	MYSERIAL.print(readSpeed());
-	MYSERIAL.print("  ");
-	if (newL)
-		MYSERIAL.print("\n");
-}
-
-// print current position, direction, speed and whether the target position has been reached
-void Finger::printDetails(void)
-{
-	MYSERIAL.print("Finger ");
-	MYSERIAL.print(fingerIndex);
-	MYSERIAL.print("  ");
-	printPos();
-	printDir();
-	printSpeed();
-	printReached(true);		// print new line after
-
-}
-
-// print finger number, pins and limits
-void Finger::printConfig(void)
-{
-	MYSERIAL.print("Finger");
-	MYSERIAL.print(fingerIndex);
-	MYSERIAL.print(" -");
-	MYSERIAL.print(" \tdir0: ");
-	MYSERIAL.print(_pin.dir[0]);
-	MYSERIAL.print(" \tdir1: ");
-	MYSERIAL.print(_pin.dir[1]);
-	MYSERIAL.print(" \tposSense: ");
-	MYSERIAL.print(_pin.posSns);
-#ifdef FORCE_SENSE
-	MYSERIAL.print(" \tforceSense: ");
-	MYSERIAL.print(_pin.forceSns);
-#endif
-	MYSERIAL.print("\tinvert: ");
-	MYSERIAL.println(_invert);
-
-	MYSERIAL.print("MinPos: ");
-	MYSERIAL.print(_pos.limit.min);
-	MYSERIAL.print("\tMaxPos: ");
-	MYSERIAL.println(_pos.limit.max);
-
-	MYSERIAL.print("MinSpeed: ");
-	MYSERIAL.print(_speed.limit.min);
-	MYSERIAL.print("\tMaxSpeed: ");
-	MYSERIAL.println(_speed.limit.max);
-
-#ifdef FORCE_SENSE
-	MYSERIAL.print("MinForce: ");
-	MYSERIAL.print(_force.limit.min);
-	MYSERIAL.print("\tMaxForce: ");
-	MYSERIAL.println(_force.limit.max);
-#endif
-
-
-	MYSERIAL.print("\n");
-}
+//// print the current position (no new line)
+//void Finger::printPos(void)
+//{
+//	printPos(0);
+//}
+//
+//// print the current position (new line)
+//void Finger::printPos(bool newL)
+//{
+//	MYSERIAL.print("Pos ");
+//	MYSERIAL.print(readPos());
+//	MYSERIAL.print("  ");
+//	if (newL)
+//		MYSERIAL.print("\n");
+//}
+//
+//// print the current position error (no new line)
+//void Finger::printPosError(void)
+//{
+//	printPosError(0);
+//}
+//
+//// print the current position error (new line)
+//void Finger::printPosError(bool newL)
+//{
+//	MYSERIAL.print("Err ");
+//	MYSERIAL.print(readPosError());
+//	MYSERIAL.print("  ");
+//	if (newL)
+//		MYSERIAL.print("\n");
+//}
+//
+//// print the current direction (no new line)
+//void Finger::printDir(void)
+//{
+//	printDir(0);
+//}
+//
+//// print the current direction (new line)
+//void Finger::printDir(bool newL)
+//{
+//	const char* _dirString[2] = { "OPEN","CLOSE" };	// direction string
+//
+//	MYSERIAL.print("Dir ");
+//	MYSERIAL.print(_dirString[readDir()]);
+//	MYSERIAL.print("  ");
+//	if (newL)
+//		MYSERIAL.print("\n");
+//}
+//
+//// print whether the target position has been reached (no new line)
+//void Finger::printReached(void)
+//{
+//	printReached(0);
+//}
+//
+//// print whether the target position has been reached (new line)
+//void Finger::printReached(bool newL)
+//{
+//	MYSERIAL.print("Reached ");
+//	MYSERIAL.print(reachedPos());
+//	MYSERIAL.print("  ");
+//	if (newL)
+//		MYSERIAL.print("\n");
+//}
+//
+//// print the current speed (no new line)
+//void Finger::printSpeed(void)
+//{
+//	printSpeed(0);
+//}
+//
+//// print the current speed (new line)
+//void Finger::printSpeed(bool newL)
+//{
+//	MYSERIAL.print("Speed ");
+//	MYSERIAL.print(readSpeed());
+//	MYSERIAL.print("  ");
+//	if (newL)
+//		MYSERIAL.print("\n");
+//}
+//
+//// print current position, direction, speed and whether the target position has been reached
+//void Finger::printDetails(void)
+//{
+//	MYSERIAL.print("Finger ");
+//	MYSERIAL.print(fingerIndex);
+//	MYSERIAL.print("  ");
+//	printPos();
+//	printDir();
+//	printSpeed();
+//	printReached(true);		// print new line after
+//
+//}
+//
+//// print finger number, pins and limits
+//void Finger::printConfig(void)
+//{
+//	MYSERIAL.print("Finger");
+//	MYSERIAL.print(fingerIndex);
+//	MYSERIAL.print(" -");
+//	MYSERIAL.print(" \tdir0: ");
+//	MYSERIAL.print(_pin.dir[0]);
+//	MYSERIAL.print(" \tdir1: ");
+//	MYSERIAL.print(_pin.dir[1]);
+//	MYSERIAL.print(" \tposSense: ");
+//	MYSERIAL.print(_pin.posSns);
+//#ifdef FORCE_SENSE
+//	MYSERIAL.print(" \tforceSense: ");
+//	MYSERIAL.print(_pin.forceSns);
+//#endif
+//	MYSERIAL.print("\tinvert: ");
+//	MYSERIAL.println(_invert);
+//
+//	MYSERIAL.print("MinPos: ");
+//	MYSERIAL.print(_pos.limit.min);
+//	MYSERIAL.print("\tMaxPos: ");
+//	MYSERIAL.println(_pos.limit.max);
+//
+//	MYSERIAL.print("MinSpeed: ");
+//	MYSERIAL.print(_speed.limit.min);
+//	MYSERIAL.print("\tMaxSpeed: ");
+//	MYSERIAL.println(_speed.limit.max);
+//
+//#ifdef FORCE_SENSE
+//	MYSERIAL.print("MinForce: ");
+//	MYSERIAL.print(_force.limit.min);
+//	MYSERIAL.print("\tMaxForce: ");
+//	MYSERIAL.println(_force.limit.max);
+//#endif
+//
+//
+//	MYSERIAL.print("\n");
+//}
 
 
 //
@@ -789,10 +785,6 @@ void Finger::forceController(void)
 	// if force limit is reached
 	if (_force.curr > _force.limit.max)
 	{
-		MYSERIAL.print("F");
-		MYSERIAL.print(fingerIndex);
-		MYSERIAL.println(" max force");
-
 		// store current movement direction so that stopping the motor is not perceived as a direction change
 		bool tempDir = _dir.curr;
 

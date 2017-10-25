@@ -17,6 +17,21 @@
  * 
  */
 
+// uncomment one of the following to select the board
+//#define ALMOND_BOARD
+#define CHESTNUT_BOARD
+
+// number of controllable fingers (number of motors)
+ #if defined(ALMOND_BOARD)
+#define NUM_FINGERS 5
+#define MYSERIAL Serial
+#elif defined(CHESTNUT_BOARD)
+#define NUM_FINGERS 4
+#define MYSERIAL SerialUSB
+#else
+#error 'No board selected'
+#endif
+
 // initialise Finger class to array, and assigns pins
 Finger finger;
 

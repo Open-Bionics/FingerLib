@@ -68,7 +68,7 @@ ISR(TIMER5_COMPA_vect)
 
 	timer5cnt++;    // increment timer counter every
 
-					// triggered once a millisecond
+	// triggered once a millisecond
 	if ((timer5cnt - mSecCount) >= MILLI_TIME)
 	{
 		mSecCount = timer5cnt;

@@ -20,8 +20,8 @@
 // Uncomment out the following to use PID pos control instead of custom P control
 #define USE_PID					
 
-// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only)
-#define FORCE_SENSE
+//// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only)
+//#define FORCE_SENSE
 
 
 
@@ -32,11 +32,13 @@
 
 // BOARD SPECIFIC LIBRARIES
 #if defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_UNO)
-	#define MYSERIAL Serial
+	//#define MYSERIAL Serial
 	#include "timers/avr_FingerTimer.h"
 #elif defined(ARDUINO_ARCH_SAMD)
-	#define MYSERIAL SerialUSB
+	//#define MYSERIAL SerialUSB
 	#include "timers/samd_FingerTimer.h"
+	// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only)
+	#define FORCE_SENSE
 #else
 	#error FingerLib only supports boards using an Arduino Mega 2560, Arduino UNO, Arduino Zero, Almond PCB or Chestnut PCB.
 #endif
@@ -78,9 +80,6 @@
 
 
 #define POS_REACHED_TOLERANCE	50		// tolerance for posReached()
-
-
-
 
 
 
@@ -198,22 +197,22 @@ class Finger
 #endif
 		
 
-		// PRINT
-		void printPos(void);				// print the current position (no new line)
-		void printPos(bool newL);			// print the current position (new line)
-		void printPosError(void);			// print the current position error (no new line)
-		void printPosError(bool newL);		// print the current position error (new line)
+		//// PRINT
+		//void printPos(void);				// print the current position (no new line)
+		//void printPos(bool newL);			// print the current position (new line)
+		//void printPosError(void);			// print the current position error (no new line)
+		//void printPosError(bool newL);		// print the current position error (new line)
 
-		void printDir(void);				// print the current direction (no new line)
-		void printDir(bool newL);			// print the current direction (new line)
-		void printReached(void);			// print whether the target position has been reached (no new line)
-		void printReached(bool newL);		// print whether the target position has been reached (new line)
+		//void printDir(void);				// print the current direction (no new line)
+		//void printDir(bool newL);			// print the current direction (new line)
+		//void printReached(void);			// print whether the target position has been reached (no new line)
+		//void printReached(bool newL);		// print whether the target position has been reached (new line)
 
-		void printSpeed(void);				// print the current speed (no new line)
-		void printSpeed(bool newL);			// print the current speed (new line)
-				
-		void printDetails(void);			// print current position, direction, speed and whether the target position has been reached
-		void printConfig(void);				// print finger number, pins and limits
+		//void printSpeed(void);				// print the current speed (no new line)
+		//void printSpeed(bool newL);			// print the current speed (new line)
+		//		
+		//void printDetails(void);			// print current position, direction, speed and whether the target position has been reached
+		//void printConfig(void);				// print finger number, pins and limits
 
 
 		// CONTROL

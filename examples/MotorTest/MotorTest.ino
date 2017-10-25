@@ -27,8 +27,10 @@
 // number of controllable fingers (number of motors)
 #if defined(ALMOND_BOARD)
 #define NUM_FINGERS 5
+#define MYSERIAL Serial
 #elif defined(CHESTNUT_BOARD)
 #define NUM_FINGERS 4
+#define MYSERIAL SerialUSB
 #else
 #error 'No board selected'
 #endif
