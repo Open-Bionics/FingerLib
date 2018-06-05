@@ -69,6 +69,14 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 	// if the current finger number is valid
 	if ((fingerIndex >= 0) && (fingerIndex < MAX_FINGERS))
 	{
+				// attach all finger pins
+		_pin.dir[0] = dir0;
+		_pin.dir[1] = dir1;
+		_pin.posSns = posSns;
+#ifdef FORCE_SENSE
+		_pin.forceSns = forceSns;
+#endif
+		
 		// configure pins
 		pinMode(dir0, OUTPUT);		// set direction1 pin to output
 		pinMode(dir1, OUTPUT);		// set direction2 pin to output
@@ -77,18 +85,13 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 		pinMode(forceSns, INPUT);	// set force sense pin to input
 #endif
 
-		// attach all finger pins
-		_pin.dir[0] = dir0;
-		_pin.dir[1] = dir1;
-		_pin.posSns = posSns;
-#ifdef FORCE_SENSE
-		_pin.forceSns = forceSns;
-#endif
+		// initialise circle buffer
+		_velBuff.begin(VEL_BUFF_SIZE);
 
 		// set limits and initial values
 		setPosLimits(MIN_FINGER_POS, MAX_FINGER_POS);
-		setSpeedLimits(MIN_FINGER_SPEED, MAX_FINGER_SPEED);
-		writeSpeed(MAX_FINGER_SPEED);
+		setPWMLimits(MIN_FINGER_PWM, MAX_FINGER_PWM);
+		writeSpeed(MAX_FINGER_PWM);
 		writePos(MIN_FINGER_POS);
 
 		// enable the motor and disable finger inversion 
@@ -166,14 +169,14 @@ void Finger::setPosLimits(int min, int max)
 }
 
 // set the maximum and minimum speed limits
-void Finger::setSpeedLimits(int min, int max)
+void Finger::setPWMLimits(int min, int max)
 {
 	// set limits
-	_speed.limit.min = min;
-	_speed.limit.max = max;
+	_PWM.limit.min = min;
+	_PWM.limit.max = max;
 
 #if	defined(USE_PID)
-	_PID.setLimits(-(double)_speed.limit.max, _speed.limit.max);
+	_PID.setLimits(-(double)_PWM.limit.max, _PWM.limit.max);
 #endif
 }
 
@@ -312,23 +315,23 @@ void Finger::open_close(boolean dir)
 // write a target speed to the finger
 void Finger::writeSpeed(int value)
 {
-	_speed.targ = constrain((uint16_t)value, _speed.limit.min, _speed.limit.max);
+	_PWM.targ = constrain((uint16_t)value, _PWM.limit.min, _PWM.limit.max);
 
 #if	defined(USE_PID)
-		_PID.setLimits(-(double)_speed.targ, _speed.targ);
+		_PID.setLimits(-(double)_PWM.targ, _PWM.targ);
 #endif
 }
 
 // return the current speed being written to the finger
 uint8_t Finger::readSpeed(void)
 {
-	return _speed.curr;
+	return _PWM.curr;
 }
 
 // return the target speed
 uint8_t Finger::readTargetSpeed(void)
 {
-	return _speed.targ;
+	return _PWM.targ;
 }
 
 
@@ -587,9 +590,9 @@ void Finger::disableForceSense(void)
 //	MYSERIAL.println(_pos.limit.max);
 //
 //	MYSERIAL.print("MinSpeed: ");
-//	MYSERIAL.print(_speed.limit.min);
+//	MYSERIAL.print(_PWM.limit.min);
 //	MYSERIAL.print("\tMaxSpeed: ");
-//	MYSERIAL.println(_speed.limit.max);
+//	MYSERIAL.println(_PWM.limit.max);
 //
 //#ifdef FORCE_SENSE
 //	MYSERIAL.print("MinForce: ");
@@ -682,7 +685,7 @@ void Finger::positionController(void)
 	_pos.error = (signed int)(_pos.targ - _pos.curr);
 
 	// speed/position line gradient
-	m = (float)(((float)_speed.targ) / ((float)proportionalOffset));
+	m = (float)(((float)_PWM.targ) / ((float)proportionalOffset));
 
 	// change the ± sign on the motorSpeed depending on required direction
 	if (_pos.error >= 0)
@@ -695,19 +698,19 @@ void Finger::positionController(void)
 	}
 	else if (_pos.error > (signed int)(proportionalOffset + motorStopOffset))        // set to max speed depending on direction
 	{
-		motorSpeed = _speed.targ;
+		motorSpeed = _PWM.targ;
 	}
 	else if (_pos.error < -(signed int)(proportionalOffset + motorStopOffset))		// set to -max speed depending on direction
 	{
-		motorSpeed = -_speed.targ;
+		motorSpeed = -_PWM.targ;
 	}
 	else if (abs(_pos.error) <= (proportionalOffset + motorStopOffset))				// proportional control
 	{
-		motorSpeed = (m * (_pos.error + (motorStopOffset * vectorise))) - (_speed.limit.min * vectorise);
+		motorSpeed = (m * (_pos.error + (motorStopOffset * vectorise))) - (_PWM.limit.min * vectorise);
 	}
 
 	// constrain speed to limits
-	motorSpeed = constrain(motorSpeed, -((signed int)_speed.limit.max), (signed int)_speed.limit.max);
+	motorSpeed = constrain(motorSpeed, -((signed int)_PWM.limit.max), (signed int)_PWM.limit.max);
 
 	// if motor disabled, set speed to 0
 	if (!_motorEn)
@@ -724,20 +727,20 @@ void Finger::motorControl(signed int motorSpeed)
 	static bool direction = 0;
 
 	// split vectorised speed into speed and direction elements, and limit the results
-	if (motorSpeed < (signed int)-_speed.limit.min)
+	if (motorSpeed < (signed int)-_PWM.limit.min)
 	{
-		(motorSpeed < (signed int)-_speed.limit.max) ? motorSpeed = _speed.limit.max : motorSpeed = -motorSpeed;
+		(motorSpeed < (signed int)-_PWM.limit.max) ? motorSpeed = _PWM.limit.max : motorSpeed = -motorSpeed;
 		direction = OPEN;
 	}
-	else if (motorSpeed >(signed int) _speed.limit.min)
+	else if (motorSpeed >(signed int) _PWM.limit.min)
 	{
-		(motorSpeed >(signed int) _speed.limit.max) ? motorSpeed = _speed.limit.max : motorSpeed;
+		(motorSpeed >(signed int) _PWM.limit.max) ? motorSpeed = _PWM.limit.max : motorSpeed;
 		direction = CLOSE;
 	}
 	else motorSpeed = 0;
 
 	// store current speed
-	_speed.curr = motorSpeed;
+	_PWM.curr = motorSpeed;
 
 #ifdef FORCE_SENSE
 	static signed int prevMotorSpeed[MAX_FINGERS] = { 0 };
@@ -746,7 +749,7 @@ void Finger::motorControl(signed int motorSpeed)
 	// if motor has just started a movement or direction has changed
 	if (((prevMotorSpeed[fingerIndex] == 0) && (motorSpeed > 0)) ||
 		(direction != prevMotorDir[fingerIndex]) ||
-		((motorSpeed - prevMotorSpeed[fingerIndex]) > (MAX_FINGER_SPEED / 3)))
+		((motorSpeed - prevMotorSpeed[fingerIndex]) > (MAX_FINGER_PWM / 3)))
 	{
 		// start current spike timer
 		currentSpikeTimer.start(CURR_SPIKE_DUR_US);
