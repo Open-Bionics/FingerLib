@@ -11,24 +11,31 @@
 
 #include "timer_and_delay.h"
 
-////////////////////// NON_BLOCKING MICRO SECOND DELAY CLASS //////////////////////////
-US_NB_DELAY::US_NB_DELAY()
+////////////////////// NON_BLOCKING DELAY CLASS //////////////////////////
+
+NB_DELAY_CLASS::NB_DELAY_CLASS()
+{
+	_started = false;
+	_startTime = 0;
+}
+
+NB_DELAY_CLASS::~NB_DELAY_CLASS()
 {
 
 }
 
-void US_NB_DELAY::start(long delVal)
+// start non-blocking delay
+void NB_DELAY_CLASS::start(long delVal)
 {
-	_startTime = micros();
+	_startTime = ticker();
 	_interval = delVal;
-	_started = true;	
+	_started = true;
 }
 
-bool US_NB_DELAY::finished(void)
+// returns true if _interval has elapsed
+bool NB_DELAY_CLASS::finished(void)
 {
-	long now = micros();
-
-	if (((now - _startTime) >= _interval) && _started)
+	if (((ticker() - _startTime) >= _interval) && _started)
 	{
 		_started = false;
 		return true;
@@ -39,25 +46,37 @@ bool US_NB_DELAY::finished(void)
 	}
 }
 
-bool US_NB_DELAY::started(void)
+// returns true if timer is running
+bool NB_DELAY_CLASS::started(void)
 {
 	return _started;
 }
 
-long US_NB_DELAY::now(void)
+// returns elapsed time, if not started return 0
+long NB_DELAY_CLASS::now(void)
 {
 	if (!_started)
-		return (-1);
+	{
+		return 0;
+	}
 	else
-		return (micros() - _startTime);
+	{
+		return (ticker() - _startTime);
+	}
 }
 
-void US_NB_DELAY::stop(void)
+// stop the timer and return elapsed time
+long NB_DELAY_CLASS::stop(void)
 {
+	long elapsed = now();
+
 	_started = false;
+
+	return elapsed;
 }
 
-bool US_NB_DELAY::timeEllapsed(long delVal)
+// run the timer constantly, return true every time the delVal has elapsed
+bool NB_DELAY_CLASS::timeElapsed(long delVal)
 {
 	if (!started())			// if timer is not started (first run of timer)
 	{
@@ -75,74 +94,96 @@ bool US_NB_DELAY::timeEllapsed(long delVal)
 	}
 }
 
-////////////////////// NON_BLOCKING MICRO SECOND TIMER CLASS //////////////////////////
-US_NB_TIMER::US_NB_TIMER()
+// return the interval/delVal currently being used
+long NB_DELAY_CLASS::getInterval(void)
+{
+	return _interval;
+}
+
+// function used to increment the timer after a particular period (us, ms, seconds etc)
+unsigned long MS_NB_DELAY::ticker(void)
+{
+	return millis();
+}
+
+// function used to increment the timer after a particular period (us, ms, seconds etc)
+unsigned long US_NB_DELAY::ticker(void)
+{
+	return micros();
+}
+
+
+
+////////////////////// NON_BLOCKING TIMER CLASS //////////////////////////
+
+NB_TIMER_CLASS::NB_TIMER_CLASS()
+{
+	_startTime = 0;
+	_started = false;
+
+	_pauseTime = 0;
+	_paused = false;
+}
+
+NB_TIMER_CLASS::~NB_TIMER_CLASS()
 {
 
 }
 
-void US_NB_TIMER::start(void)
+// start non-blocking timer
+void NB_TIMER_CLASS::start(void)
 {
-	_startTime = micros();
+	_startTime = ticker();
 	_started = true;
+	_paused = false;
 }
 
-bool US_NB_TIMER::started(void)
+// returns true if delay timer is running	
+bool NB_TIMER_CLASS::started(void)
 {
 	return _started;
 }
 
-long US_NB_TIMER::now(void)
+// returns how much time has elapsed since the start, if not started return 0
+long NB_TIMER_CLASS::now(void)
 {
 	if (!_started)
+	{
 		return 0;
+	}
+	else if (_paused)
+	{
+		return (_pauseTime - _startTime);
+	}
 	else
-		return (micros() - _startTime);
+	{
+		return (ticker() - _startTime);
+	}
 }
 
-long US_NB_TIMER::stop(void)
+// stop the timer and return elapsed time
+long NB_TIMER_CLASS::stop(void)
 {
-	long timeEllapsed;
+	long elapsed = now();
 
-	timeEllapsed = now();
 	_started = false;
 
-	return timeEllapsed;
+	return elapsed;
 }
 
-bool US_NB_TIMER::timeEllapsed(long interval)
+// stop the timer, return the elapsed time and start the timer again 
+long NB_TIMER_CLASS::restart(void)
+{
+	long elapsed = stop();
+	start();
+	return elapsed;
+}
+
+// check whether a certain interval has elapsed, keep timer running
+bool NB_TIMER_CLASS::timeElapsed(long interval)
 {
 	if (now() >= interval)
-		return true;
-	else
-		return false;
-}
-
-
-
-
-
-
-////////////////////// NON_BLOCKING MILLI SECOND DELAY CLASS //////////////////////////
-MS_NB_DELAY::MS_NB_DELAY()
-{
-
-}
-
-void MS_NB_DELAY::start(long delVal)
-{
-	_startTime = millis();
-	_interval = delVal;
-	_started = true;
-}
-
-bool MS_NB_DELAY::finished(void)
-{
-	long now = millis();
-
-	if (((now - _startTime) >= _interval) && _started)
 	{
-		_started = false;
 		return true;
 	}
 	else
@@ -151,81 +192,44 @@ bool MS_NB_DELAY::finished(void)
 	}
 }
 
-bool MS_NB_DELAY::started(void)
-{
-	return _started;
-}
-
-long MS_NB_DELAY::now(void)
+// pause the timer
+long NB_TIMER_CLASS::pause(void)
 {
 	if (!_started)
-		return (-1);
-	else
-		return (millis() - _startTime);
-}
-
-void MS_NB_DELAY::stop(void)
-{
-	_started = false;
-}
-
-bool MS_NB_DELAY::timeEllapsed(long delVal)
-{
-	if (!started())			// if timer is not started (first run of timer)
 	{
-		start(delVal);		// start timer
-		return false;		// duration has not elapsed, so return false
-	}
-	if (finished())			// if timer is finished
-	{
-		start(delVal);		// restart timer
-		return true;		// duration has elapsed, so restart timer and return true
-	}
-	else					// else if timer has started but not finished
-	{
-		return false;		// duration has not elapsed, so return false
-	}
-}
-
-////////////////////// NON_BLOCKING MILLI SECOND TIMER CLASS //////////////////////////
-MS_NB_TIMER::MS_NB_TIMER()
-{
-
-}
-
-void MS_NB_TIMER::start(void)
-{
-	_startTime = millis();
-	_started = true;
-}
-
-bool MS_NB_TIMER::started(void)
-{
-	return _started;
-}
-
-long MS_NB_TIMER::now(void)
-{
-	if (!_started)
 		return 0;
-	else
-		return (millis() - _startTime);
+	}
+
+	_pauseTime = ticker();
+	_paused = true;
+
+	return (_pauseTime - _startTime);
 }
 
-long MS_NB_TIMER::stop(void)
+// return true of the timer is currently paused
+bool NB_TIMER_CLASS::paused()
 {
-	long timeEllapsed;
-
-	timeEllapsed = now();
-	_started = false;
-
-	return timeEllapsed;
+	return _paused;
 }
 
-bool MS_NB_TIMER::timeEllapsed(long interval)
+// resume the timer
+long NB_TIMER_CLASS::resume(void)
 {
-	if (now() >= interval)
-		return true;
-	else
-		return false;
+	_startTime += (ticker() - _pauseTime);
+	_paused = false;
+
+	return now();
+}
+
+
+// function used to increment the timer after a particular period (us, ms, seconds etc)
+unsigned long MS_NB_TIMER::ticker(void)
+{
+	return millis();
+}
+
+// function used to increment the timer after a particular period (us, ms, seconds etc)
+unsigned long US_NB_TIMER::ticker(void)
+{
+	return micros();
 }

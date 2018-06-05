@@ -360,7 +360,7 @@ void Finger::writeSpeed(int value)
 }
 
 // return the current movement speed
-uint8_t Finger::readSpeed(void)
+float Finger::readSpeed(void)
 {
 	//return _PWM.curr;
 
@@ -377,7 +377,7 @@ uint8_t Finger::readSpeed(void)
 }
 
 // return the target movement speed
-uint8_t Finger::readTargetSpeed(void)
+float Finger::readTargetSpeed(void)
 {
 	return _speed.targ;
 }
@@ -912,30 +912,37 @@ void Finger::forceController(void)
 // calculate the velocity of the motor
 void Finger::calcVel(void)
 {
-	// get the time and position at the current time
-	double duration = _velTimer.now();		// us. time since last vel calc
-	double pos = _pos.curr;					// store current pos to prevent race condition
-	double dist = (pos - _pos.prev);		// calculate distance moved (using stored pos)
-
-	// if the duration timer is currently running
-	if (_velTimer.started())
+	if ((_velTimer.now() - _lastVelCal) > (long)50000)
 	{
-		if (abs(dist) > 0)		// if there has been movement
-		{
-			_speed.raw = (dist * (double)100000) / duration;		// calc vel in ADC ticks per s?
-		}
-		else					// else if 0 distance has moved
-		{
-			_speed.raw = 0.0;	// set the velocity to 0
-		}
+		_lastVelCal = _velTimer.now();
+		SerialUSB.println("calc");
+		
+		
+		// get the time and position at the current time
+		double duration = _velTimer.now();		// us. time since last vel calc
+		double pos = _pos.curr;					// store current pos to prevent race condition
+		double dist = (pos - _pos.prev);		// calculate distance moved (using stored pos)
 
-		_velTimer.start();		// restart timer
-		_pos.prev = pos;		// save previous pos
-	}
-	else						// if the vel timer is not currently running
-	{
-		_velTimer.start();		// start the vel timer
-		_speed.raw = 0;			// clear the velocity
+		// if the duration timer is currently running
+		if (_velTimer.started())
+		{
+			if (abs(dist) > 0)		// if there has been movement
+			{
+				_speed.raw = (dist * (double)1000) / duration;		// calc vel in ADC ticks per s?
+			}
+			else					// else if 0 distance has moved
+			{
+				_speed.raw = 0.0;	// set the velocity to 0
+			}
+
+			_velTimer.start();		// restart timer
+			_pos.prev = pos;		// save previous pos
+		}
+		else						// if the vel timer is not currently running
+		{
+			_velTimer.start();		// start the vel timer
+			_speed.raw = 0;			// clear the velocity
+		}
 	}
 }
 

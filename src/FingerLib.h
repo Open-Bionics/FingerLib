@@ -178,8 +178,8 @@ class Finger
 
 		// SPEED
 		void writeSpeed(int value);			// write a target speed to the finger
-		uint8_t readSpeed(void);			// return the current movement speed of the finger
-		uint8_t readTargetSpeed(void);		// return the target movement speed
+		float readSpeed(void);				// return the current movement speed of the finger
+		float readTargetSpeed(void);		// return the target movement speed
 		uint8_t readPWM(void);				// return the current speed being written to the motor (PWM)
 		uint8_t readTargetPWM(void);		// return the target motor speed (PWM)
 
@@ -233,6 +233,10 @@ class Finger
 
 
 
+		// DEBUG
+		double debugVal = 0;
+
+
 	private:
 	
 #if defined(USE_PID)
@@ -278,6 +282,7 @@ class Finger
 
 		// CALCULATIONS
 		void calcVel(void);
+		long _lastVelCal = 0;
 };
 
 
