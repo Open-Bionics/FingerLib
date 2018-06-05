@@ -70,12 +70,6 @@ class CIRCLE_BUFFER
 			_max = 0;				/**< all-time maximum value */
 		}
 
-		CIRCLE_BUFFER(uint16_t size)
-		{
-			CIRCLE_BUFFER();
-			begin(size);
-		}
-
 		~CIRCLE_BUFFER()
 		{
 			destroy();

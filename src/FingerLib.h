@@ -21,7 +21,7 @@
 #define USE_PID					
 
 //// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only)
-//#define FORCE_SENSE
+#define FORCE_SENSE
 
 
 
@@ -86,6 +86,7 @@
 #define VEL_BUFF_SIZE			16		// number of values to store in velocity smoothing buffer (must be a power of 2)
 
 // POS LIMITS
+#define MAX_POS_SENSOR_VAL		1023	// 10 bit ADC
 #define MAX_FINGER_POS			973		// maximum motor position
 #define MIN_FINGER_POS			50		// minimum motor position
 
@@ -129,6 +130,7 @@ typedef struct _VectorProperties
 	double curr;
 	double targ;
 	double error;
+	double raw;
 	LimitProperties limit;
 } VectorProperties;
 
@@ -176,8 +178,10 @@ class Finger
 
 		// SPEED
 		void writeSpeed(int value);			// write a target speed to the finger
-		uint8_t readSpeed(void);			// return the current speed being written to the finger
-		uint8_t readTargetSpeed(void);		// return the target speed
+		uint8_t readSpeed(void);			// return the current movement speed of the finger
+		uint8_t readTargetSpeed(void);		// return the target movement speed
+		uint8_t readPWM(void);				// return the current speed being written to the motor (PWM)
+		uint8_t readTargetPWM(void);		// return the target motor speed (PWM)
 
 
 #ifdef FORCE_SENSE
@@ -186,7 +190,6 @@ class Finger
 		float readForce(void);					// return the current force value. If force sense is not enabled, return blank (-1)
 		uint16_t readCurrent(void);				// return the latest force sense ADC value
 		bool reachedForceLimit(void);			// return true if the force limit has been reached
-		void readCurrentSns(void);				// read the current force and discount the current spike (called via interrupt)
 		float convertADCToForce(int ADCVal);	// convert ADC current sense value to force value (float)
 		int convertForceToADC(float force);		// convert force value to ADC current sense value (int)
 #endif
@@ -208,22 +211,27 @@ class Finger
 		//void printPos(void);				// print the current position (no new line)
 		//void printPos(bool newL);			// print the current position (new line)
 		//void printPosError(void);			// print the current position error (no new line)
-		//void printPosError(bool newL);		// print the current position error (new line)
+		//void printPosError(bool newL);	// print the current position error (new line)
 
 		//void printDir(void);				// print the current direction (no new line)
 		//void printDir(bool newL);			// print the current direction (new line)
 		//void printReached(void);			// print whether the target position has been reached (no new line)
 		//void printReached(bool newL);		// print whether the target position has been reached (new line)
 
-		//void printSpeed(void);				// print the current speed (no new line)
-		//void printSpeed(bool newL);			// print the current speed (new line)
+		//void printSpeed(void);			// print the current speed (no new line)
+		//void printSpeed(bool newL);		// print the current speed (new line)
 		//		
 		//void printDetails(void);			// print current position, direction, speed and whether the target position has been reached
-		//void printConfig(void);				// print finger number, pins and limits
+		//void printConfig(void);			// print finger number, pins and limits
 
 
 		// CONTROL
 		void control(void);					// run position (and force) controller (called via interrupt)
+#ifdef FORCE_SENSE
+		void calcCurrentSns(void);			// read the current force and discount the current spike (called via interrupt)
+#endif
+
+
 
 	private:
 	
@@ -234,18 +242,20 @@ class Finger
 		// BUFFERS 
 		CIRCLE_BUFFER <float> _velBuff;			// velocity buffer
 
-#ifdef FORCE_SENSE
 		// TIMERS
-		US_NB_DELAY currentSpikeTimer;			// current spike rejection timer
+		US_NB_TIMER _velTimer;					// timer used to calculate the velocity
+#ifdef FORCE_SENSE
+		US_NB_DELAY _currentSpikeTimer;			// current spike rejection timer
 #endif
 
-		uint8_t fingerIndex;		// current finger number
+		uint8_t _fingerIndex;		// current finger number
 		FingerPin _pin;				// finger pin struct (dir, pos, force)
 
 		// PROPERTIES
 		VectorProperties _pos;		// position properties (prev, curr, targ, error, limit)
 		VectorProperties _dir;		// direction properties (curr)
-		VectorProperties _PWM;	// speed properties (prev, curr, targ, error, limit)		
+		VectorProperties _speed;	// movement speed properties (prev, curr, targ, error, limit)
+		VectorProperties _PWM;		// PWM speed properties (prev, curr, targ, error, limit)		
 #ifdef FORCE_SENSE
 		VectorProperties _force;	// force properties (prev, curr, targ, error, limit) (all stored as ADC values instead of N)
 #endif
@@ -265,13 +275,16 @@ class Finger
 #ifdef FORCE_SENSE
 		void forceController(void);				// stop the finger if the force limit is reached, or move to reach a target force
 #endif
+
+		// CALCULATIONS
+		void calcVel(void);
 };
 
 
 // INTERRUPT HANDLERS
 void _fingerControlCallback(void);		// runs the control() function of a Finger instance at each call by the timer interrupt
 #ifdef FORCE_SENSE
-void _currentSenseCallback(void);		// runs the readCurrentSns() function of a Finger instance at each call 
+void _currentSenseCallback(void);		// runs the calcCurrentSns() function of a Finger instance at each call 
 #endif
 
 // HARDWARE SPECIFIC FUNCTIONS
