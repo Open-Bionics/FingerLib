@@ -93,8 +93,15 @@
 #define POS_REACHED_TOLERANCE	50		// tolerance for posReached()
 
 #if	defined(FORCE_SENSE)
-	#define CURR_SPIKE_DUR_US	(double) 50000				// us - duration of peak to discard
+	// STALL DETECTION
+	#define MAX_STALL_TIME_MS		500		// ms. maximum amount of time the motors can stall for before they are determined to be stalled
+	#define STALL_CURRENT_THRESH	100		// current threshold, value, above which, if the motor velocity == 0, the motor is deemed stalled
 
+	// CURRENT
+	#define CURR_SPIKE_DUR_US		(double) 50000		// us - duration of peak to discard
+	#define CURR_SENSE_BUFF_SIZE	64 					// number of samples to store in the current sense circle buffer
+
+	// FORCE
 	// force and current conversion values
 	#define MOTOR_DRIVER_CURRENT_LIMIT		(float) 425		// mA
 	#define CURRENT_SENSE_SATURATION_VAL	(float) 950		// max ADC value
@@ -104,6 +111,10 @@
 	#define CURRENT_SENSE_CONST_M			(float) 7.4833	// generated from the equation of the line from the force-current graph
 	#define CURRENT_SENSE_CONST_C			(float) 46.444	// generated from the equation of the line from the force-current graph
 #endif
+
+// MACROS
+#define window(amt,low,high) ((amt)<(low)?(0):((amt)>(high)?(0):(amt)))		// limit amt to within low and high
+
 
 
 // FINGER PINS
@@ -180,8 +191,8 @@ class Finger
 		void writeSpeed(int value);			// write a target speed to the finger
 		float readSpeed(void);				// return the current movement speed of the finger
 		float readTargetSpeed(void);		// return the target movement speed
-		uint8_t readPWM(void);				// return the current speed being written to the motor (PWM)
-		uint8_t readTargetPWM(void);		// return the target motor speed (PWM)
+		int readPWM(void);					// return the current speed being written to the motor (PWM)
+		int readTargetPWM(void);			// return the target motor speed (PWM)
 
 
 #ifdef FORCE_SENSE
@@ -196,15 +207,23 @@ class Finger
 
 		// STOP/START
 		void stopMotor(void);				// stop the motor and hold position
-		void disableMotor(void);			// disable the motor by setting the speed to 0
-		void enableMotor(void);				// re-enable the motor
-		void motorEnable(bool motorEn);		// set motor to be enabled/disabled
+
+		// ENABLE/DISABLE
+		void motorEnable(bool en);			// set motor to be enabled/disabled
+		bool enabled(void);					// return true if the motor is enabled
+#ifdef FORCE_SENSE
+		void forceSenseEnable(bool en);		// set force sensing to be enabled/disabled
+#endif
+
+		//void disableMotor(void);			// disable the motor by setting the speed to 0
+		//void enableMotor(void);				// re-enable the motor
+		//void motorEnable(bool motorEn);		// set motor to be enabled/disabled
 		void enableInterrupt(void);			// enable timer interrupt for motor control
 		void disableInterrupt(void);		// disable timer interrupt for motor control
-#ifdef FORCE_SENSE
-		void enableForceSense(void);		// enable force sensing
-		void disableForceSense(void);		// disable force sensing
-#endif
+//#ifdef FORCE_SENSE
+//		void enableForceSense(void);		// enable force sensing
+//		void disableForceSense(void);		// disable force sensing
+//#endif
 		
 
 		//// PRINT
@@ -245,11 +264,15 @@ class Finger
 #endif
 		// BUFFERS 
 		CIRCLE_BUFFER <float> _velBuff;			// velocity buffer
+#ifdef FORCE_SENSE
+		CIRCLE_BUFFER <uint16_t> _IBuff;		// current buffer
+#endif
 
 		// TIMERS
 		US_NB_TIMER _velTimer;					// timer used to calculate the velocity
 #ifdef FORCE_SENSE
 		US_NB_DELAY _currentSpikeTimer;			// current spike rejection timer
+		MS_NB_DELAY _motorStallTimer;
 #endif
 
 		uint8_t _fingerIndex;		// current finger number
@@ -270,7 +293,7 @@ class Finger
 		bool _motorEn;				// motor enable flag
 		bool _interruptEn;			// flag to set whether to use the timer interrupt for motor control
 #ifdef FORCE_SENSE
-		bool _forceSenseEn = false;	// force sense is enable flag
+		bool _forceSnsEn = false;	// force sense is enable flag
 #endif
 
 		// CONTROLLERS

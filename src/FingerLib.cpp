@@ -86,6 +86,7 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 #endif
 
 		// initialise circle buffer
+		_IBuff.begin(CURR_SENSE_BUFF_SIZE);
 		_velBuff.begin(VEL_BUFF_SIZE);
 
 		// set limits and initial values
@@ -351,11 +352,12 @@ void Finger::open_close(boolean dir)
 // write a target speed to the finger
 void Finger::writeSpeed(int value)
 {
-	_speed.targ = constrain((int16_t)value, -_PWM.limit.max, _PWM.limit.max);
+	_speed.targ = constrain((int16_t)value, -_PWM.limit.max, _PWM.limit.max);		// store vectorised speed
 	_PWM.targ = _speed.targ;
 
+
 #if	defined(USE_PID)
-		_PID.setLimits(-abs(_PWM.targ), abs(_PWM.targ));
+	_PID.setLimits(-abs(_PWM.targ), abs(_PWM.targ));
 #endif
 }
 
@@ -364,9 +366,9 @@ float Finger::readSpeed(void)
 {
 	//return _PWM.curr;
 
-	//pauseInterrupt();			// pause 'control()' interrupt to prevent a race condition
+	//pauseInterrupt();				// pause 'control()' interrupt to prevent a race condition
 
-	calcVel();							// read finger speed (ADC/per)
+	calcVel();						// read finger speed (ADC/per)
 	_velBuff.write(_speed.raw);
 	_speed.prev = _speed.curr;
 	_speed.curr = _velBuff.readMean();
@@ -383,13 +385,13 @@ float Finger::readTargetSpeed(void)
 }
 
 // return the current speed being written to the finger
-uint8_t Finger::readPWM(void)
+int Finger::readPWM(void)
 {
 	return _PWM.curr;
 }
 
 // return the target speed
-uint8_t Finger::readTargetPWM(void)
+int Finger::readTargetPWM(void)
 {
 	return _PWM.targ;
 }
@@ -409,20 +411,28 @@ uint8_t Finger::readTargetPWM(void)
 float Finger::readForce(void)
 {
 	// if force sense is not enabled, return
-	if (!_forceSenseEn)
+	if (!_forceSnsEn)
+	{
 		return (-1);
+	}
 	else
+	{
 		return convertADCToForce(readCurrent());
+	}
 }
 
 // return the latest force sense ADC value
 uint16_t Finger::readCurrent(void)
 {
 	// if force sense is not enabled, return
-	if (!_forceSenseEn)
+	if (!_forceSnsEn)
+	{
 		return 0;
+	}
 	else
-		return _force.curr;
+	{
+		return _IBuff.readMean();
+	}
 }
 
 // return true if the force limit has been reached
@@ -445,6 +455,9 @@ void Finger::calcCurrentSns(void)
 		_force.curr = analogRead(_pin.forceSns);
 		interrupts();
 	}
+
+	// store the read current into a buffer for smoothing
+	_IBuff.write((uint16_t)_force.curr);
 }
 
 // convert ADC current sense value to force value (float)
@@ -485,23 +498,56 @@ void Finger::stopMotor(void)
 	writePos(readPos());
 }
 
-// disable the motor by setting the speed to 0
-void Finger::disableMotor(void)
-{
-	_motorEn = false;
-}
 
-// re-enable the motor
-void Finger::enableMotor(void)
-{
-	_motorEn = true;
-}
+// ENABLE/DISABLE
 
 // set motor to be enabled/disabled
-void Finger::motorEnable(bool motorEn)
+void Finger::motorEnable(bool en)
 {
-	_motorEn = motorEn;
+	_motorEn = en;
+
+	if (_motorEn)
+	{
+		_PID.reset();
+	}
 }
+
+// return true if the motor is enabled
+bool Finger::enabled(void)
+{
+	return _motorEn;
+}
+
+#ifdef FORCE_SENSE
+// set force sensing to be enabled/disabled
+void Finger::forceSenseEnable(bool en)
+{
+	_forceSnsEn = en;
+}
+#endif
+
+
+
+
+
+//
+//// disable the motor by setting the speed to 0
+//void Finger::disableMotor(void)
+//{
+//	_motorEn = false;
+//}
+//
+//// re-enable the motor
+//void Finger::enableMotor(void)
+//{
+//	_motorEn = true;
+//}
+//
+//// set motor to be enabled/disabled
+//void Finger::motorEnable(bool motorEn)
+//{
+//	_motorEn = motorEn;
+//}
 
 // enable timer interrupt for motor control
 void Finger::enableInterrupt(void)
@@ -518,20 +564,20 @@ void Finger::disableInterrupt(void)
 	
 	_interruptEn = false;
 }
-
-#ifdef FORCE_SENSE
-// enable force sensing
-void Finger::enableForceSense(void)
-{
-	_forceSenseEn = true;
-}
-
-// disable force sensing
-void Finger::disableForceSense(void)
-{
-	_forceSenseEn = false;;
-}
-#endif
+//
+//#ifdef FORCE_SENSE
+//// enable force sensing
+//void Finger::enableForceSense(void)
+//{
+//	_forceSnsEn = true;
+//}
+//
+//// disable force sensing
+//void Finger::disableForceSense(void)
+//{
+//	_forceSnsEn = false;;
+//}
+//#endif
 
 // PRINT
 
@@ -685,14 +731,47 @@ void Finger::control(void)
 	}
 	interrupts();
 
-#ifdef FORCE_SENSE
-	// if force sense is enabled, run force control
-	if (_forceSenseEn)
-	{
-		forceController();
-	}
+//#ifdef FORCE_SENSE
+//	// if force sense is enabled, run force control
+//	if (_forceSnsEn)
+//	{
+//		forceController();
+//	}
+//
+//#endif
 
-#endif
+
+
+	if (debugVal)
+	{
+	// if the motor is stopped and drawing a lot of current, set the targ pos to be the curr pos
+		if ((_speed.curr == 0) && (_IBuff.readMean() >= STALL_CURRENT_THRESH))
+		{
+			if (!_motorStallTimer.started())
+			{
+				_motorStallTimer.start(MAX_STALL_TIME_MS);
+			}
+			else if (_motorStallTimer.finished())	// if the motor has been stalled for the MAX_STALL_TIME_MS
+			{
+				_motorStallTimer.stop();
+
+				// hold the motor at the current pos
+				_pos.targ = _pos.curr;
+				_pos.error = (_pos.targ - _pos.curr);
+
+				// invert finger direction if enabled
+				if (_invert)
+				{
+					_pos.targ = MAX_POS_SENSOR_VAL - _pos.targ;
+				}
+
+				SerialUSB.print("F");
+				SerialUSB.print(_fingerIndex);
+				SerialUSB.print(": stall detected. Setting to ");
+				SerialUSB.println(_pos.targ);
+			}
+		}
+	}
 
 	positionController();	// run the position controller 
 }
@@ -710,28 +789,29 @@ void Finger::control(void)
 // position controller (using PID)
 void Finger::positionController(void)
 {
-	int16_t speed = 0;
-
-	// if motor enabled
-	if (_motorEn)
-	{
-		speed = _PID.run(_pos.targ, _pos.curr);
-	}
+	// run pos PID controller to calculate target speed
+	_speed.targ = _PID.run(_pos.targ, _pos.curr);
 
 	// DEBUG
-	//MYSERIAL.print("F");
-	//MYSERIAL.print(_fingerIndex);
-	//MYSERIAL.print(": C: ");
-	//MYSERIAL.print(_pos.curr);
-	//MYSERIAL.print("  T: ");
-	//MYSERIAL.print(_pos.targ);
-	//MYSERIAL.print("  S: ");
-	//MYSERIAL.println(speed);
-	//if (_fingerIndex >= 3)
-	//	MYSERIAL.println("\n");
+	if (debugVal)
+	{
+#define MYSERIAL SerialUSB
+		
+		MYSERIAL.print("F");
+		MYSERIAL.print(_fingerIndex);
+		MYSERIAL.print(": C: ");
+		MYSERIAL.print(_pos.curr);
+		MYSERIAL.print("  T: ");
+		MYSERIAL.print(_pos.targ);
+		MYSERIAL.print("  S: ");
+		MYSERIAL.print(_speed.targ);
+		MYSERIAL.print("  V: ");
+		MYSERIAL.print(readSpeed());
+		MYSERIAL.print("  I: ");
+		MYSERIAL.println(readCurrent());
+	}
 
-
-	motorControl(speed);
+	motorControl(_speed.targ);
 }
 
 #else
@@ -793,50 +873,45 @@ void Finger::positionController(void)
 #endif
 
 // split the vectorised motor speed into direction and speed values and write to the motor
-void Finger::motorControl(signed int motorSpeed)
+void Finger::motorControl(signed int speed)
 {
-	static bool dir = 0;
+	bool dir = OPEN;
 
-	// split vectorised speed into speed and direction elements, and limit the results
-	if (motorSpeed < (signed int)-_PWM.limit.min)
+	// if the motor is disabled, set the speed to 0
+	if (!_motorEn)
 	{
-		(motorSpeed < (signed int)-_PWM.limit.max) ? motorSpeed = _PWM.limit.max : motorSpeed = -motorSpeed;
+		speed = 0;
+	}
+	
+	// determine direction and invert speed if necessary
+	if (speed > 0)
+	{
 		dir = OPEN;
 	}
-	else if (motorSpeed >(signed int) _PWM.limit.min)
+	else if (speed < 0)
 	{
-		(motorSpeed >(signed int) _PWM.limit.max) ? motorSpeed = _PWM.limit.max : motorSpeed;
 		dir = CLOSE;
+		speed = -speed;
 	}
-	else motorSpeed = 0;
+
+	// if speed is not within min/max, set to 0
+	speed = window(speed, 0, _PWM.limit.max);
 
 	// store previous and current speed
 	_PWM.prev = _PWM.curr;
-	_PWM.curr = (uint8_t)motorSpeed;
+	_PWM.curr = (uint8_t)speed;
 
 	// store previous and current direction
 	_dir.prev = _dir.curr;
 	_dir.curr = dir;
 
 #ifdef FORCE_SENSE
-	//static signed int prevMotorSpeed[MAX_FINGERS] = { 0 };
-	//static bool prevMotorDir[MAX_FINGERS] = { 0 };
-
-	//// if motor has just started a movement or direction has changed
-	//if (((prevMotorSpeed[_fingerIndex] == 0) && (motorSpeed > 0)) ||
-	//	(direction != prevMotorDir[_fingerIndex]) ||
-	//	((motorSpeed - prevMotorSpeed[_fingerIndex]) > (MAX_FINGER_PWM / 3)))
-	//{
 	// if motor has just started a movement or direction has changed or the PWM speed has changed by > 1/3 of the max
 	if (((_PWM.prev == 0) && (_PWM.curr > 0)) || (_dir.curr != _dir.prev) || ((_PWM.curr - _PWM.prev) > (MAX_FINGER_PWM / 3)))
 	{
 		// start current spike timer
 		_currentSpikeTimer.start(CURR_SPIKE_DUR_US);
 	}
-
-	//prevMotorSpeed[_fingerIndex] = motorSpeed;
-	//prevMotorDir[_fingerIndex] = direction;
-
 #endif
 
 	// 	invert finger direction if enabled
@@ -846,7 +921,7 @@ void Finger::motorControl(signed int motorSpeed)
 	}
 
 	// write the speed to the motors
-	analogWrite(_pin.dir[dir], motorSpeed);   //write fingerSpeed to one direction pin
+	analogWrite(_pin.dir[dir], speed);		//write motor speed to one direction pin
 	analogWrite(_pin.dir[!dir], 0);			//write 0 to other direction pin
 }
 
@@ -857,7 +932,7 @@ void Finger::motorControl(signed int motorSpeed)
 void Finger::forceController(void)
 {
 	// if force sense is not enabled, return
-	if (!_forceSenseEn)
+	if (!_forceSnsEn)
 	{
 		return;
 	}
@@ -911,38 +986,32 @@ void Finger::forceController(void)
 
 // calculate the velocity of the motor
 void Finger::calcVel(void)
-{
-	if ((_velTimer.now() - _lastVelCal) > (long)50000)
+{	
+	// if the duration timer is currently running
+	//if (_velTimer.started())
+	if (_velTimer.now() > 100000)		// 100ms
 	{
-		_lastVelCal = _velTimer.now();
-		SerialUSB.println("calc");
-		
-		
 		// get the time and position at the current time
 		double duration = _velTimer.now();		// us. time since last vel calc
 		double pos = _pos.curr;					// store current pos to prevent race condition
 		double dist = (pos - _pos.prev);		// calculate distance moved (using stored pos)
 
-		// if the duration timer is currently running
-		if (_velTimer.started())
+		if (abs(dist) > 0)			// if there has been movement
 		{
-			if (abs(dist) > 0)		// if there has been movement
-			{
-				_speed.raw = (dist * (double)1000) / duration;		// calc vel in ADC ticks per s?
-			}
-			else					// else if 0 distance has moved
-			{
-				_speed.raw = 0.0;	// set the velocity to 0
-			}
+			_speed.raw = (dist * (double)100000) / duration;		// calc vel in ADC ticks per s?
+		}
+		else						// else if 0 distance has moved
+		{
+			_speed.raw = 0.0;		// set the velocity to 0
+		}
 
-			_velTimer.start();		// restart timer
-			_pos.prev = pos;		// save previous pos
-		}
-		else						// if the vel timer is not currently running
-		{
-			_velTimer.start();		// start the vel timer
-			_speed.raw = 0;			// clear the velocity
-		}
+		_velTimer.start();			// restart timer
+		_pos.prev = pos;			// save previous pos
+	}
+	else if (!_velTimer.started())	// if the vel timer is not currently running
+	{
+		_velTimer.start();			// start the vel timer
+		_speed.raw = 0;				// clear the velocity	
 	}
 }
 
