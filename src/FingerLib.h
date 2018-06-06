@@ -76,6 +76,8 @@
 #define F4				4
 #define F5				5
 
+#define MAX_ADC_RES		1023
+
 // SPEED
 #define MAX_FINGER_PWM			255		// PWM. maximum motor speed
 #define MIN_FINGER_PWM			0		// PWM. minimum motor speed
@@ -86,7 +88,7 @@
 #define VEL_BUFF_SIZE			16		// number of values to store in velocity smoothing buffer (must be a power of 2)
 
 // POS LIMITS
-#define MAX_POS_SENSOR_VAL		1023	// 10 bit ADC
+#define MAX_POS_SENSOR_VAL		MAX_ADC_RES	// 10 bit ADC
 #define MAX_FINGER_POS			973		// maximum motor position
 #define MIN_FINGER_POS			50		// minimum motor position
 
@@ -98,6 +100,7 @@
 	#define STALL_CURRENT_THRESH	100		// current threshold, value, above which, if the motor velocity == 0, the motor is deemed stalled
 
 	// CURRENT
+	#define MAX_CURR_VAL			MAX_ADC_RES
 	#define CURR_SPIKE_DUR_US		(double) 50000		// us - duration of peak to discard
 	#define CURR_SENSE_BUFF_SIZE	64 					// number of samples to store in the current sense circle buffer
 
@@ -197,7 +200,6 @@ class Finger
 
 #ifdef FORCE_SENSE
 		// FORCE
-		void writeForce(float value, int dir);	// write a target force in a particular direction (0.0 - 54.95N, OPEN - CLOSE)
 		float readForce(void);					// return the current force value. If force sense is not enabled, return blank (-1)
 		uint16_t readCurrent(void);				// return the latest force sense ADC value
 		bool reachedForceLimit(void);			// return true if the force limit has been reached
@@ -214,16 +216,9 @@ class Finger
 #ifdef FORCE_SENSE
 		void forceSenseEnable(bool en);		// set force sensing to be enabled/disabled
 #endif
-
-		//void disableMotor(void);			// disable the motor by setting the speed to 0
-		//void enableMotor(void);				// re-enable the motor
-		//void motorEnable(bool motorEn);		// set motor to be enabled/disabled
 		void enableInterrupt(void);			// enable timer interrupt for motor control
 		void disableInterrupt(void);		// disable timer interrupt for motor control
-//#ifdef FORCE_SENSE
-//		void enableForceSense(void);		// enable force sensing
-//		void disableForceSense(void);		// disable force sensing
-//#endif
+
 		
 
 		//// PRINT
@@ -254,11 +249,9 @@ class Finger
 
 		// DEBUG
 		double debugVal = 0;
-
-
 	private:
 	
-#if defined(USE_PID)
+#ifdef USE_PID
 		// PID CONTROLLERS
 		PID_CONTROLLER _PID;
 #endif
@@ -298,8 +291,9 @@ class Finger
 
 		// CONTROLLERS
 		void positionController(void);			// position controller (either PID or custom P)
-		void motorControl(int motorSpeed);		// split the vectorised motor speed into direction and speed values and write to the motor
+		void motorControl(int speed);		// split the vectorised motor speed into direction and speed values and write to the motor
 #ifdef FORCE_SENSE
+		bool stallDetection(void);
 		void forceController(void);				// stop the finger if the force limit is reached, or move to reach a target force
 #endif
 

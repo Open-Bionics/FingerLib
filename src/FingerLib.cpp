@@ -23,7 +23,7 @@ bool _posCtrlTimerInit = false;					// flag to prevent multiple timer initialisa
 ////////////////////////////// Constructor/Destructor //////////////////////////////
 Finger::Finger()
 {
-	if (_fingerIndex >= MAX_FINGERS)				// if too many fingers have been initialised
+	if (_fingerIndex >= MAX_FINGERS)			// if too many fingers have been initialised
 	{
 		_fingerIndex = -1;						// set current finger number to be empty
 		_isActive = false;						// set current finger as inactive 
@@ -33,17 +33,17 @@ Finger::Finger()
 		_fingerIndex = _TotalFingerCount++;		// count the total number of fingers initialised 
 	}
 
-	_interruptEn = true;		// use the timer interrupt by default
+	motorEnable(false);
 
-
-#ifdef FORCE_SENSE			// if force sense is available on the current board, initialise the values		
-	_force.limit.reached = 0;
-	_force.targ = 0;
-	_force.curr = 0;			// force values converted to ADC values for quicker maths
-	_force.limit.max = 1023;		// force values converted to ADC values for quicker maths
-	_force.limit.min = 0;			// force values converted to ADC values for quicker maths
+	_pos = { 0 };
+	_dir = { 0 };
+	_speed = { 0 };
+	_PWM = { 0 };
+#ifdef FORCE_SENSE					
+	_force = { 0 };
 #endif
 
+	_interruptEn = true;				// use the timer interrupt by default
 }
 
 ////////////////////////////// Public Methods //////////////////////////////
@@ -69,13 +69,16 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 	// if the current finger number is valid
 	if ((_fingerIndex >= 0) && (_fingerIndex < MAX_FINGERS))
 	{
-				// attach all finger pins
+		motorEnable(false);				// disable the motor
+		
+		// attach all finger pins
 		_pin.dir[0] = dir0;
 		_pin.dir[1] = dir1;
 		_pin.posSns = posSns;
 #ifdef FORCE_SENSE
 		_pin.forceSns = forceSns;
 #endif
+		_invert = inv;					// store whether to invert the finger direction
 		
 		// configure pins
 		pinMode(dir0, OUTPUT);		// set direction1 pin to output
@@ -92,19 +95,16 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 		// set limits and initial values
 		setPosLimits(MIN_FINGER_POS, MAX_FINGER_POS);
 		setPWMLimits(MIN_FINGER_PWM, MAX_FINGER_PWM);
-
-		writeSpeed(OFF_FINGER_PWM);
-		//writePos(MIN_FINGER_POS);
-
-		// enable the motor and disable finger inversion 
-		_invert = inv;					// store whether to invert the finger direction
-		_motorEn = true;				// enable the motor
-		//_dir.curr = OPEN;				// set dir to OPEN after initial writePos to configure finger dir
+		writeDir(OPEN);
+		writeSpeed(MAX_FINGER_PWM);
+#ifdef FORCE_SENSE
+		forceSenseEnable(true);
+#endif
 
 		// if finger is being attached for the first time
 		if (!_isActive)
 		{
-			_TotalAttachedFingers++;	// update the count of total attached fingers
+			_TotalAttachedFingers++;					// update the count of total attached fingers
 		}
 
 		// add a pointer to the current finger instance to the list for position control calls, used by the ISR
@@ -133,8 +133,9 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 		setPWMFreq(dir1, 0x01);		// set PWM frequency to max freq		
 #endif
 
+		motorEnable(true);				// re-enable the motor
 		_isActive = true;				// set the current finger to be active
-		return _fingerIndex;				// return the current finger number
+		return _fingerIndex;			// return the current finger number
 	}
 	else								// if the current finger number isn't valid
 	{
@@ -355,7 +356,6 @@ void Finger::writeSpeed(int value)
 	_speed.targ = constrain((int16_t)value, -_PWM.limit.max, _PWM.limit.max);		// store vectorised speed
 	_PWM.targ = _speed.targ;
 
-
 #if	defined(USE_PID)
 	_PID.setLimits(-abs(_PWM.targ), abs(_PWM.targ));
 #endif
@@ -364,8 +364,6 @@ void Finger::writeSpeed(int value)
 // return the current movement speed
 float Finger::readSpeed(void)
 {
-	//return _PWM.curr;
-
 	//pauseInterrupt();				// pause 'control()' interrupt to prevent a race condition
 
 	calcVel();						// read finger speed (ADC/per)
@@ -398,14 +396,6 @@ int Finger::readTargetPWM(void)
 
 #ifdef FORCE_SENSE
 // FORCE
-
-//// write a target force in a particular direction (0.0 - 54.95N, OPEN - CLOSE)
-//void Finger::writeForce(float value, int dir)
-//{
-//	_force.targ = convertForceToADC(value);		// convert force value (float) to ADC value (uint16_t) for quicker maths
-//	_targForceDir = dir;						// store the target force direction
-//	_force.limit.reached = false;					// clear limit flag when a new limit is set
-//}
 
 // return the current force value. If force sense is disabled, return blank (-1)
 float Finger::readForce(void)
@@ -526,29 +516,6 @@ void Finger::forceSenseEnable(bool en)
 }
 #endif
 
-
-
-
-
-//
-//// disable the motor by setting the speed to 0
-//void Finger::disableMotor(void)
-//{
-//	_motorEn = false;
-//}
-//
-//// re-enable the motor
-//void Finger::enableMotor(void)
-//{
-//	_motorEn = true;
-//}
-//
-//// set motor to be enabled/disabled
-//void Finger::motorEnable(bool motorEn)
-//{
-//	_motorEn = motorEn;
-//}
-
 // enable timer interrupt for motor control
 void Finger::enableInterrupt(void)
 {
@@ -564,20 +531,8 @@ void Finger::disableInterrupt(void)
 	
 	_interruptEn = false;
 }
-//
-//#ifdef FORCE_SENSE
-//// enable force sensing
-//void Finger::enableForceSense(void)
-//{
-//	_forceSnsEn = true;
-//}
-//
-//// disable force sensing
-//void Finger::disableForceSense(void)
-//{
-//	_forceSnsEn = false;;
-//}
-//#endif
+
+
 
 // PRINT
 
@@ -720,16 +675,8 @@ void Finger::disableInterrupt(void)
 //
 void Finger::control(void)
 {
-	// read finger position
-	noInterrupts();
-	_pos.curr = analogRead(_pin.posSns);
-
-	// invert finger direction if enabled
-	if (_invert)
-	{
-		_pos.curr = MAX_POS_SENSOR_VAL - _pos.curr;
-	}
-	interrupts();
+	// read finger position (reads to _pos.curr internally() )
+	readPos();
 
 //#ifdef FORCE_SENSE
 //	// if force sense is enabled, run force control
@@ -741,40 +688,18 @@ void Finger::control(void)
 //#endif
 
 
-
-	if (debugVal)
+#ifdef FORCE_SENSE
+	if (_forceSnsEn)
 	{
-	// if the motor is stopped and drawing a lot of current, set the targ pos to be the curr pos
-		if ((_speed.curr == 0) && (_IBuff.readMean() >= STALL_CURRENT_THRESH))
-		{
-			if (!_motorStallTimer.started())
-			{
-				_motorStallTimer.start(MAX_STALL_TIME_MS);
-			}
-			else if (_motorStallTimer.finished())	// if the motor has been stalled for the MAX_STALL_TIME_MS
-			{
-				_motorStallTimer.stop();
-
-				// hold the motor at the current pos
-				_pos.targ = _pos.curr;
-				_pos.error = (_pos.targ - _pos.curr);
-
-				// invert finger direction if enabled
-				if (_invert)
-				{
-					_pos.targ = MAX_POS_SENSOR_VAL - _pos.targ;
-				}
-
-				SerialUSB.print("F");
-				SerialUSB.print(_fingerIndex);
-				SerialUSB.print(": stall detected. Setting to ");
-				SerialUSB.println(_pos.targ);
-			}
-		}
+		stallDetection();
 	}
+#endif
+	
 
 	positionController();	// run the position controller 
 }
+
+
 
 
 
@@ -928,6 +853,40 @@ void Finger::motorControl(signed int speed)
 
 #ifdef FORCE_SENSE
 
+bool Finger::stallDetection(void)
+{
+	// if the motor is stopped and drawing a lot of current, set the targ pos to be the curr pos
+	if ((abs(_speed.curr) <= 1) && (_IBuff.readMean() >= STALL_CURRENT_THRESH))
+	{
+		if (!_motorStallTimer.started())
+		{
+			_motorStallTimer.start(MAX_STALL_TIME_MS);
+		}
+		else if (_motorStallTimer.finished())	// if the motor has been stalled for the MAX_STALL_TIME_MS
+		{
+			_motorStallTimer.stop();
+
+			// hold the motor at the current pos
+			_pos.targ = _pos.curr;
+			_pos.error = (_pos.targ - _pos.curr);
+
+			//MYSERIAL.print("\nF");
+			//MYSERIAL.print(_fingerIndex);
+			//MYSERIAL.print(": stall detected. Setting to ");
+			//MYSERIAL.println(_pos.targ);
+			//MYSERIAL.print("\n\n");
+
+			return true;
+		}
+	}
+	else
+	{
+		_motorStallTimer.stop();
+	}
+
+	return false;
+}
+
 // stop the finger if the force limit is reached, or move to reach a target force
 void Finger::forceController(void)
 {
@@ -940,7 +899,7 @@ void Finger::forceController(void)
 	US_NB_DELAY forceTimer;					// timer used to detect if the force is being sustained or is just a small peak
 	const int force_pos_increment = 5;		// rate at which the actuator 'searches' for the target force
 
-											// clear force limit flag
+	// clear force limit flag
 	_force.limit.reached = false;
 
 	// if force limit is reached
