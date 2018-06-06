@@ -678,6 +678,9 @@ void Finger::control(void)
 	// read finger position (reads to _pos.curr internally() )
 	readPos();
 
+	// read finger speed (including calculating the vel)
+	readSpeed();
+
 //#ifdef FORCE_SENSE
 //	// if force sense is enabled, run force control
 //	if (_forceSnsEn)
@@ -689,7 +692,7 @@ void Finger::control(void)
 
 
 #ifdef FORCE_SENSE
-	if (_forceSnsEn)
+	if (_forceSnsEn && _motorEn)
 	{
 		stallDetection();
 	}
@@ -845,9 +848,12 @@ void Finger::motorControl(signed int speed)
 		dir = !dir;
 	}
 
+
+
 	// write the speed to the motors
 	analogWrite(_pin.dir[dir], speed);		//write motor speed to one direction pin
 	analogWrite(_pin.dir[!dir], 0);			//write 0 to other direction pin
+	
 }
 
 
@@ -870,11 +876,12 @@ bool Finger::stallDetection(void)
 			_pos.targ = _pos.curr;
 			_pos.error = (_pos.targ - _pos.curr);
 
-			//MYSERIAL.print("\nF");
-			//MYSERIAL.print(_fingerIndex);
-			//MYSERIAL.print(": stall detected. Setting to ");
-			//MYSERIAL.println(_pos.targ);
-			//MYSERIAL.print("\n\n");
+//#define MYSERIAL SerialUSB
+//			MYSERIAL.print("\nF");
+//			MYSERIAL.print(_fingerIndex);
+//			MYSERIAL.print(": stall detected. Setting to ");
+//			MYSERIAL.println(_pos.targ);
+//			MYSERIAL.print("\n");
 
 			return true;
 		}
@@ -948,7 +955,8 @@ void Finger::calcVel(void)
 {	
 	// if the duration timer is currently running
 	//if (_velTimer.started())
-	if (_velTimer.now() > 100000)		// 100ms
+	//if (_velTimer.now() > 100000)		// 100ms
+	if (_velTimer.now() > 50000)		// 50ms
 	{
 		// get the time and position at the current time
 		double duration = _velTimer.now();		// us. time since last vel calc

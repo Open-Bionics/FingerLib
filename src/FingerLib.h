@@ -96,8 +96,8 @@
 
 #if	defined(FORCE_SENSE)
 	// STALL DETECTION
-	#define MAX_STALL_TIME_MS		500		// ms. maximum amount of time the motors can stall for before they are determined to be stalled
-	#define STALL_CURRENT_THRESH	100		// current threshold, value, above which, if the motor velocity == 0, the motor is deemed stalled
+	#define MAX_STALL_TIME_MS		750		// ms. maximum amount of time the motors can stall for before they are determined to be stalled
+	#define STALL_CURRENT_THRESH	50		// current threshold, value, above which, if the motor velocity == 0, the motor is deemed stalled
 
 	// CURRENT
 	#define MAX_CURR_VAL			MAX_ADC_RES
@@ -293,7 +293,7 @@ class Finger
 		void positionController(void);			// position controller (either PID or custom P)
 		void motorControl(int speed);		// split the vectorised motor speed into direction and speed values and write to the motor
 #ifdef FORCE_SENSE
-		bool stallDetection(void);
+		bool stallDetection(void);				// if the finger is drawing too much current whilst not moving, set the target pos to the current pos
 		void forceController(void);				// stop the finger if the force limit is reached, or move to reach a target force
 #endif
 
