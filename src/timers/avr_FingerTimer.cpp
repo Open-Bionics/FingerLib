@@ -9,13 +9,9 @@
  *
  */ 
 
-
 #if defined(ARDUINO_ARCH_AVR)
 
 #include "avr_FingerTimer.h"
-
- // used for millis()
-unsigned long _milliSeconds = 0;
 
 // create global pointers to functions and flags
 void(*_ptr2MotorFunc)(void) = NULL;
@@ -31,11 +27,6 @@ void _passMotorPtr(void(*f)(void))
 void _attachFuncToTimer(void(*f)(void))
 {
 	_ptr2PiggybackFunc = f;
-}
-
-long customMillis(void)   // similar to Millis(), but Millis() may not function due to using Timer5
-{
-	return _milliSeconds;
 }
 
 #if defined(ARDUINO_AVR_MEGA2560)
@@ -72,10 +63,11 @@ ISR(TIMER5_COMPA_vect)
 	if ((timer5cnt - mSecCount) >= MILLI_TIME)
 	{
 		mSecCount = timer5cnt;
-		_milliSeconds++;
 
-		if (_ptr2PiggybackFunc != NULL)
+		if (_ptr2PiggybackFunc)
+		{
 			_ptr2PiggybackFunc();
+		}
 	}
 
 	// position control for a single motor
@@ -83,8 +75,10 @@ ISR(TIMER5_COMPA_vect)
 	{
 		motorCount = timer5cnt;
 		
-		if (_ptr2MotorFunc != NULL)
+		if (_ptr2MotorFunc)
+		{
 			_ptr2MotorFunc();
+		}
 	}
 }
 
@@ -129,9 +123,8 @@ ISR(TIMER1_COMPA_vect)
 	if ((timer1cnt - mSecCount) >= MILLI_TIME)
 	{
 		mSecCount = timer1cnt;
-		_milliSeconds++;
 
-		if (_ptr2PiggybackFlag)
+		if (_ptr2PiggybackFunc)
 		{
 			_ptr2PiggybackFunc();
 		}

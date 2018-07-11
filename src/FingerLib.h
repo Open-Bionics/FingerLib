@@ -20,8 +20,8 @@
 // Uncomment out the following to use PID pos control instead of custom P control
 #define USE_PID					
 
-//// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only)
-#define FORCE_SENSE
+// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only) (Automatically enabled when using Chestnut PCB)
+//#define FORCE_SENSE
 
 
 
@@ -76,33 +76,34 @@
 #define F4				4
 #define F5				5
 
-#define MAX_ADC_RES		1023
+// BOARD SETTINGS
+#define MAX_ADC_RES					1023			// maximum resolution of the ADC for pos sensing
 
 // SPEED
-#define MAX_FINGER_PWM			255		// PWM. maximum motor speed
-#define MIN_FINGER_PWM			0		// PWM. minimum motor speed
-#define OFF_FINGER_PWM			0		// PWM. zero motor speed
-#define MAX_FINGER_SPEED		MAX_FINGER_PWM	// backwards compatibility
-#define MIN_FINGER_SPEED		MIN_FINGER_PWM	// backwards compatibility
+#define MAX_FINGER_PWM				255				// PWM. maximum motor speed
+#define MIN_FINGER_PWM				0				// PWM. minimum motor speed
+#define OFF_FINGER_PWM				0				// PWM. zero motor speed
+#define MAX_FINGER_SPEED			MAX_FINGER_PWM	// backwards compatibility
+#define MIN_FINGER_SPEED			MIN_FINGER_PWM	// backwards compatibility
 
-#define VEL_BUFF_SIZE			16		// number of values to store in velocity smoothing buffer (must be a power of 2)
+#define VEL_BUFF_SIZE				16				// number of values to store in velocity smoothing buffer (must be a power of 2)
 
 // POS LIMITS
-#define MAX_POS_SENSOR_VAL		MAX_ADC_RES	// 10 bit ADC
-#define MAX_FINGER_POS			973		// maximum motor position
-#define MIN_FINGER_POS			50		// minimum motor position
+#define MAX_POS_SENSOR_VAL			MAX_ADC_RES		// 10 bit ADC
+#define MAX_FINGER_POS				973				// maximum motor position
+#define MIN_FINGER_POS				50				// minimum motor position
 
-#define POS_REACHED_TOLERANCE	50		// tolerance for posReached()
+#define POS_REACHED_TOLERANCE		50				// tolerance for posReached()
 
 #if	defined(FORCE_SENSE)
 	// STALL DETECTION
-	#define MAX_STALL_TIME_MS		750		// ms. maximum amount of time the motors can stall for before they are determined to be stalled
-	#define STALL_CURRENT_THRESH	50		// current threshold, value, above which, if the motor velocity == 0, the motor is deemed stalled
+	#define MAX_STALL_TIME_MS		750				// ms. maximum amount of time the motors can stall for before they are determined to be stalled
+	#define STALL_CURRENT_THRESH	50				// current threshold, value, above which, if the motor velocity == 0, the motor is deemed stalled
 
 	// CURRENT
 	#define MAX_CURR_VAL			MAX_ADC_RES
-	#define CURR_SPIKE_DUR_US		(double) 50000		// us - duration of peak to discard
-	#define CURR_SENSE_BUFF_SIZE	64 					// number of samples to store in the current sense circle buffer
+	#define CURR_SPIKE_DUR_US		(double) 50000			// us - duration of peak to discard
+	#define CURR_SENSE_BUFF_SIZE	64 						// number of samples to store in the current sense circle buffer
 
 	// FORCE
 	// force and current conversion values
@@ -180,7 +181,6 @@ class Finger
 		bool reachedPos(void);				// returns true if position reached
 		bool reachedPos(uint16_t posErr);	// returns true if position reached
 
-
 		// DIR
 		void writeDir(int value);			// write a target direction to the finger
 		uint8_t readDir(void);				// return the current direction
@@ -189,14 +189,12 @@ class Finger
 		void open_close(void);				// toggle finger between open/closed
 		void open_close(boolean dir);		// set finger to open/close 
 
-
 		// SPEED
 		void writeSpeed(int value);			// write a target speed to the finger
 		float readSpeed(void);				// return the current movement speed of the finger
 		float readTargetSpeed(void);		// return the target movement speed
 		int readPWM(void);					// return the current speed being written to the motor (PWM)
 		int readTargetPWM(void);			// return the target motor speed (PWM)
-
 
 #ifdef FORCE_SENSE
 		// FORCE
@@ -245,10 +243,6 @@ class Finger
 		void calcCurrentSns(void);			// read the current force and discount the current spike (called via interrupt)
 #endif
 
-
-
-		// DEBUG
-		double debugVal = 0;
 	private:
 	
 #ifdef USE_PID

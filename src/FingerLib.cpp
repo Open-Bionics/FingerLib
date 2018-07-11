@@ -89,8 +89,10 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 #endif
 
 		// initialise circle buffer
-		_IBuff.begin(CURR_SENSE_BUFF_SIZE);
 		_velBuff.begin(VEL_BUFF_SIZE);
+#if	defined(FORCE_SENSE)
+		_IBuff.begin(CURR_SENSE_BUFF_SIZE);
+#endif
 
 		// set limits and initial values
 		setPosLimits(MIN_FINGER_POS, MAX_FINGER_POS);
@@ -719,25 +721,6 @@ void Finger::positionController(void)
 {
 	// run pos PID controller to calculate target speed
 	_speed.targ = _PID.run(_pos.targ, _pos.curr);
-
-	// DEBUG
-	if (debugVal)
-	{
-#define MYSERIAL SerialUSB
-		
-		MYSERIAL.print("F");
-		MYSERIAL.print(_fingerIndex);
-		MYSERIAL.print(": C: ");
-		MYSERIAL.print(_pos.curr);
-		MYSERIAL.print("  T: ");
-		MYSERIAL.print(_pos.targ);
-		MYSERIAL.print("  S: ");
-		MYSERIAL.print(_speed.targ);
-		MYSERIAL.print("  V: ");
-		MYSERIAL.print(readSpeed());
-		MYSERIAL.print("  I: ");
-		MYSERIAL.println(readCurrent());
-	}
 
 	motorControl(_speed.targ);
 }
