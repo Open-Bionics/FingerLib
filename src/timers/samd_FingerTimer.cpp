@@ -36,72 +36,75 @@ void _attachFuncToTimer(void (*f)(void))
 // initialise timer registers for 5KHz timer (200uS)
 void _posCtrlTimerSetup(void)
 {
-  // Enable clock for TC4 
-  REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TC4_TC5) ;
-  while ( GCLK->STATUS.bit.SYNCBUSY == 1 ); // wait for sync 
+	// Enable clock for TC4 
+	REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TC4_TC5) ;
+	while ( GCLK->STATUS.bit.SYNCBUSY == 1 ); // wait for sync 
 
-  // The type cast must fit with the selected timer mode 
-  TcCount16* TC = (TcCount16*) TC4;		// get timer struct
+	// The type cast must fit with the selected timer mode 
+	TcCount16* TC = (TcCount16*) TC4;		// get timer struct
 
-  TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;	// Disable TC
-  while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+	TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;	// Disable TC
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
 
-  TC->CTRLA.reg |= TC_CTRLA_MODE_COUNT16;	// Set Timer counter Mode to 16 bits
-  while (TC->STATUS.bit.SYNCBUSY == 1);		// wait for sync 
-  TC->CTRLA.reg |= TC_CTRLA_WAVEGEN_MFRQ;	// Set TC Freq
-  while (TC->STATUS.bit.SYNCBUSY == 1);		// wait for sync 
+	TC->CTRLA.reg |= TC_CTRLA_MODE_COUNT16;	// Set Timer counter Mode to 16 bits
+	while (TC->STATUS.bit.SYNCBUSY == 1);		// wait for sync 
+	TC->CTRLA.reg |= TC_CTRLA_WAVEGEN_MFRQ;	// Set TC Freq
+	while (TC->STATUS.bit.SYNCBUSY == 1);		// wait for sync 
 
-  TC->CTRLA.reg |= TC_CTRLA_PRESCALER_DIV2;		// Set prescaler
-  while (TC->STATUS.bit.SYNCBUSY == 1);			// wait for sync 
+	TC->CTRLA.reg |= TC_CTRLA_PRESCALER_DIV2;		// Set prescaler
+	while (TC->STATUS.bit.SYNCBUSY == 1);			// wait for sync 
 
-  TC->CC[0].reg = CC_REG_VAL;			// timer frequency
-  while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+	TC->CC[0].reg = CC_REG_VAL;			// timer frequency
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
   
-  // Interrupts 
-  TC->INTENSET.reg = 0;              // disable all interrupts
-  TC->INTENSET.bit.OVF = 1;          // enable overflow
-  TC->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
+	// Interrupts 
+	TC->INTENSET.reg = 0;              // disable all interrupts
+	TC->INTENSET.bit.OVF = 1;          // enable overflow
+	TC->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
 
-  // Enable InterruptVector
-  NVIC_EnableIRQ(TC4_IRQn);
+	// Enable InterruptVector
+	NVIC_EnableIRQ(TC4_IRQn);
 
-  // Enable TC
-  TC->CTRLA.reg |= TC_CTRLA_ENABLE;
-  while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync
+	// Enable TC
+	TC->CTRLA.reg |= TC_CTRLA_ENABLE;
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync
   
 }
 
 // TC4
 void TC4_Handler()			// also used as PWM timer for D16 & D17 (not used on any OB Samd hand) 
 {
-	static long timer5cnt = 0;      // main timer counter increments every call of the interrupt
-	static long servoCount = 0;     // time instance variable for motor position control
-	static long mSecCount = 0;		// time instance variable for millisecond counter
+	static long timerCount = 0;			// main timer counter increments every call of the interrupt
+	static long motorCount = 0;			// time instance variable for motor position control
+	static long mSecCount = 0;			// time instance variable for millisecond counter
 	
-	TcCount16* TC = (TcCount16*) TC4; // get timer struct
-	if (TC->INTFLAG.bit.OVF == 1)     // An overflow caused the interrupt
+	TcCount16* TC = (TcCount16*) TC4;	// get timer struct
+	if (TC->INTFLAG.bit.OVF == 1)		// An overflow caused the interrupt
 	{  
 		TC->INTFLAG.bit.OVF = 1;		// writing a one clears the flag ovf flag
 
-		timer5cnt++;    // increment timer counter every 200uS
+		timerCount++;					// increment timer counter every period
 		
 		// triggered once a millisecond
-		if((timer5cnt - mSecCount) >= MILLI_TIME)
+		if((timerCount - mSecCount) >= MILLI_TIME)
 		{
-			mSecCount = timer5cnt;
+			mSecCount = timerCount;
 			
-			if(_ptr2PiggybackFunc != NULL)
+			if (_ptr2PiggybackFunc)
+			{
 				_ptr2PiggybackFunc();
-			
+			}	
 		}
  
 		// position control for a single motor
-		if((timer5cnt - servoCount) >= MOTOR_CTRL_TIME)
+		if((timerCount - motorCount) >= MOTOR_CTRL_TIME)
 		{
-			servoCount = timer5cnt;
+			motorCount = timerCount;
 
 			if (_ptr2MotorFunc != NULL)
+			{
 				_ptr2MotorFunc();
+			}
 		}
 	}
   
@@ -110,10 +113,5 @@ void TC4_Handler()			// also used as PWM timer for D16 & D17 (not used on any OB
 		TC->INTFLAG.bit.MC0 = 1;    // writing a one clears the flag ovf flag
 	}
 }
-
-//long customMillis(void)   // similar to Millis(), but Millis() may not function properly due to using TC4
-//{
-//	return _milliSeconds;
-//}
 
 #endif /* defined(ARDUINO_ARCH_SAMD) */

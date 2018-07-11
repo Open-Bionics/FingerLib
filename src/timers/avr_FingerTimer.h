@@ -58,7 +58,6 @@
 // function prototypes
 void _posCtrlTimerSetup(void);
 void _changePWMFreq(void);
-long customMillis(void);
 
 void _passMotorPtr(void (*f)(void));
 void _attachFuncToTimer(void (*f)(void));

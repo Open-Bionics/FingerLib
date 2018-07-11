@@ -1,7 +1,7 @@
 # Open Bionics - FingerLib.h
 
 ## Description
-This library can be used to control up to 6 fingers, which allows control for an Open Bionics robotic hand (Ada, Brunel). Each finger is actuated using a Firgelli
+This library can be used to control up to 6 fingers, which allows control for an Open Bionics robotic hand (Ada, Brunel). Each finger is actuated using a Firgelli/Actuonix
 linear actuator, where the position is determined by using the embedded linear potentiometer. 
 
 FingerLib.h has been designed to closely resemble the Servo.h library, to allow ease of implementation for hobbyists and researchers. 

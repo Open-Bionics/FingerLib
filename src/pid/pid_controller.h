@@ -50,23 +50,27 @@ class PID_CONTROLLER
 
 		void enable(void);								// enable the PID controller (default)
 		void disable(void);								// disable the PID controller
+		void enable(bool en);							// set the PID controller to be enabled/disabled
+		void reset(void);
 
 		double run(double targ, double curr);			// run the PID computation
 
-		void setLimits(double min, double max);			// set the output value limits
-		void setGains(float Kp, float Ki, float Kd);	// set the controller gains
+		void setLimits(double min, double max);			// set the output value limits					
+		void getLimits(double *min, double *max);		// get the output value limits
+		void setRampRate(double ramp);					// set the maximum change in output limit
 
-		void getGains(float *Kp, float *Ki, float *Kd);
+		void setGains(float Kp, float Ki, float Kd);	// set the controller gains
+		void getGains(float *Kp, float *Ki, float *Kd);	// get the controller gains
 
 	private:
 		bool _en;										// enable/disable flag
 
 		US_NB_TIMER _sampleTimer;						// duration of sample in us
 
-		// double _min, _max;								// output limits
+		double _min, _max;								// output limits
+		double _rampLim;								// ramp rate limit
 
-		double _min = DEFAULT_LIMIT_MIN;				// OllyEdit
-		double _max = DEFAULT_LIMIT_MAX;				// OllyEdit
+		double _prevOutput;								// previous output (used 
 
 		float _Kp, _Ki, _Kd;							// PID controller gains
 

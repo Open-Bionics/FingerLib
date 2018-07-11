@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.1.0] - Jul 11th, 2018
+
+
+### Added 
+- Added CircleBuffer functionality
+
+### Changed 
+- Updated library keywords and properties
+- Fixed compatability with Uno, Mega & Chestnut boards
+- Updated PID controller and added ramp functionality
+- Non-blocking delay (NB_DELAY) and Non-blocking timer (NB_TIMER) have been updated to use common parent class
+
+
 ## [2.0.6] - Aug 23rd, 2017
 
 ### Changed 
