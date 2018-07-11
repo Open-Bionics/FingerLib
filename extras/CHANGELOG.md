@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed 
 - Updated library keywords and properties
-- Fixed compatability with Uno, Mega & Chestnut boards
+- Fixed compatibility with Uno, Mega & Chestnut boards
 - Updated PID controller and added ramp functionality
 - Non-blocking delay (NB_DELAY) and Non-blocking timer (NB_TIMER) have been updated to use common parent class
 
