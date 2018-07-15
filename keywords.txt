@@ -6,52 +6,52 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Finger			KEYWORD1
-FingerLib		KEYWORD1
+Finger	KEYWORD1
+FingerLib	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-attach				KEYWORD2
-detach				KEYWORD2
-attached			KEYWORD2
-invertFingerDir		KEYWORD2
+attach	KEYWORD2
+detach	KEYWORD2
+attached	KEYWORD2
+invertFingerDir	KEYWORD2
 
-setPosLimits		KEYWORD2
-setPWMLimits		KEYWORD2
-setForceLimits		KEYWORD2
+setPosLimits	KEYWORD2
+setPWMLimits	KEYWORD2
+setForceLimits	KEYWORD2
 
-writePos			KEYWORD2
-movePos				KEYWORD2
-readPos				KEYWORD2
-readPosError		KEYWORD2
-readTargetPos		KEYWORD2
-reachedPos			KEYWORD2
+writePos	KEYWORD2
+movePos	KEYWORD2
+readPos	KEYWORD2
+readPosError	KEYWORD2
+readTargetPos	KEYWORD2
+reachedPos	KEYWORD2
 
-writeDir			KEYWORD2
-readDir				KEYWORD2
-open				KEYWORD2
-close				KEYWORD2
-open_close			KEYWORD2
+writeDir	KEYWORD2
+readDir	KEYWORD2
+open	KEYWORD2
+close	KEYWORD2
+open_close	KEYWORD2
 
-writeSpeed			KEYWORD2
-readSpeed			KEYWORD2
-readTargetSpeed		KEYWORD2
-readPWM				KEYWORD2
-readTargetPWM		KEYWORD2
+writeSpeed	KEYWORD2
+readSpeed	KEYWORD2
+readTargetSpeed	KEYWORD2
+readPWM	KEYWORD2
+readTargetPWM	KEYWORD2
 
 
-readForce			KEYWORD2
-readCurrent			KEYWORD2
+readForce	KEYWORD2
+readCurrent	KEYWORD2
 reachedForceLimit	KEYWORD2
 convertADCToForce	KEYWORD2
 convertForceToADC	KEYWORD2
 
-stopMotor			KEYWORD2
-motorEnable			KEYWORD2
-enabled				KEYWORD2
+stopMotor	KEYWORD2
+motorEnable	KEYWORD2
+enabled	KEYWORD2
 forceSenseEnable	KEYWORD2
-enableInterrupt		KEYWORD2
+enableInterrupt	KEYWORD2
 disableInterrupt	KEYWORD2
 
 # printPos	KEYWORD2
